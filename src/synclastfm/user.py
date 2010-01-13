@@ -26,7 +26,7 @@ class User(object):
         client=gconf.client_get_default()
         self._username = client.get_string(self.PATH % "username")
         self._password = client.get_string(self.PATH % "password")
-    
+      
     def _setusername(self, value):
         self._username=value
         
