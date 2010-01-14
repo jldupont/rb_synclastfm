@@ -21,26 +21,41 @@ class gHandler(ContentHandler):
         self.output=output
         self.acc=""
         self.stack=[]
+        self.current=None
+        self.count=0
+        self.prev=[]
         self.attrs=None
         self.topLevel=True
         self.dropTopLevel=dropTopLevel
       
     def startElement(self, _name, _attrs):
         
+        self.attrs=_attrs
         # just in case somebody at somepoint
         # slips/forgets a case...
         name=_name.lower()
-        self.stack.append(name)
-                
-        self.attrs=_attrs
+
+
+        #adjust tag occurence context        
+        try:    prev=self.prev.pop()
+        except: prev=(None, 0)
+        
+        pName, pCount = prev
+
+        if name==pName:
+            self.count=pCount+1
+        else:
+            self.count=0
             
+        self.stack.append((name, self.count))
+        
+        #Top level related
         if self.topLevel and self.dropTopLevel:
             self.output(self.stack, _attrs, None)
             self.stack.pop()
             self.attrs = None
-            
-        self.topLevel=False            
-
+        self.topLevel=False
+        
                 
     def characters(self, ch):
         """
@@ -53,6 +68,7 @@ class gHandler(ContentHandler):
 
     def endElement(self, name):
         self.acc = self.acc.strip()
+        
         if self.acc:
             self.output(self.stack, self.attrs, self.acc)
             self.acc=""
@@ -60,7 +76,7 @@ class gHandler(ContentHandler):
         self.attrs= None
         
         #top level might have been dropped
-        try:    self.stack.pop()
+        try:    self.prev.append( self.stack.pop() )
         except: pass
         
 

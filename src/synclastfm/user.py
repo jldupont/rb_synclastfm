@@ -46,7 +46,8 @@ class User(object):
     username=property(fget=_getusername, fset=_setusername)    
     password=property(fget=_getpassword, fset=_setpassword)
     
-    
+
+## ==================================================================== TESTS
 
 if __name__=="__main__":
     u=User()

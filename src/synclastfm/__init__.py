@@ -6,10 +6,23 @@
     Feature 1: Fill "rating" from "Love" field
     Feature 2: Update local "play count" 
     
+    Implementation:
+    ===============
+    
+    - On "playing_changed" event, fetch "track info" from Last.fm
+      - Update "rating" field
+      - Update "play count" field
+    
+    Failure modes:
+    ==============
+    - Username for Last.fm account can't be found
+    - Failure to communicate with Last.fm
+    - Track cannot be found on Last.fm 
+    
 """
 import rhythmdb, rb #@UnresolvedImport
 
-
+from config import ConfigDialog
 PLUGIN_NAME="synclastfm"
 
 class SyncLastFMDKPlugin (rb.Plugin):
@@ -17,14 +30,12 @@ class SyncLastFMDKPlugin (rb.Plugin):
     def __init__ (self):
         rb.Plugin.__init__ (self)
         self.current_entry=None
-        self.details=None
 
     def activate (self, shell):
         self.shell = shell
         sp = shell.get_player ()
         self.cb = (
                    sp.connect ('playing-song-changed', self.playing_song_changed)
-                   ,sp.connect('playing-changed',      self.playing_changed)
                    )
 
     def deactivate (self, shell):
@@ -34,49 +45,14 @@ class SyncLastFMDKPlugin (rb.Plugin):
         for id in self.cb:
             sp.disconnect (id)
 
-    def playing_changed (self, sp, playing):
-        fncName="_h"
-        if self.new_song:
-            self.new_song = False
-            fncName+="New"
-            
-            if playing: fncName+="Playing"
-            else:       fncName+="Stopped"
-        else:
-            if playing: fncName+="Resumed"
-            else:       fncName+="Paused"
-        
-        # dynamic dispatch
-        getattr(self, fncName)()        
-        
-        
-    def _hNewPlaying(self):
-        """
-        New Song started playing
-        """
-        self.details=EntryHelper.track_details(self.shell, self.current_entry)
-        print self.details
-        
-    
-    def _hNewStopped(self):
-        """
-        New Song loaded
-        
-        Does not seem that this state occurs
-        """
-        self.details=EntryHelper.track_details(self.shell, self.current_entry)
-        
-    
-    def _hPaused(self):
-        """
-        Current Song paused
-        """
-    
-    def _hResumed(self):
-        """
-        Current Song resumed
-        """
-    
+    def create_configure_dialog(self, dialog=None):
+        if not dialog:
+            glade_file_path=self.find_file("config.glade")
+            proxy=ConfigDialog(glade_file_path)
+            dialog=proxy.get_dialog() 
+        dialog.present()
+        return dialog
+
             
     def playing_song_changed (self, sp, entry):
         """
@@ -85,7 +61,6 @@ class SyncLastFMDKPlugin (rb.Plugin):
         event "playing_changed"
         """
         self.current_entry = sp.get_playing_entry()
-        self.new_song=True
         
 
 

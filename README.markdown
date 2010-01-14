@@ -18,3 +18,9 @@ There are 2 methods:
 1. Use the Ubuntu Debian repository [jldupont](https://launchpad.net/~jldupont/+archive/jldupont)  with the package "rbsynclastfm"
 
 2. Use the "Download Source" function of this git repo and place the "rbsynclastfm" folder in ".gnome/rhythmbox/plugins
+
+Dependencies
+============
+
+The Last.fm plugin for Rhythmbox must be installed and configured (though not necessarily active). 
+This requirement ensures that the "username" parameter for the current user's Last.fm profile can be found.
