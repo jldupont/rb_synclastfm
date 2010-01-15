@@ -26,7 +26,10 @@ from config import ConfigDialog
 PLUGIN_NAME="synclastfm"
 
 class SyncLastFMDKPlugin (rb.Plugin):
-    
+    """
+    Must derive from rb.Plugin in order
+    for RB to use the plugin
+    """
     def __init__ (self):
         rb.Plugin.__init__ (self)
         self.current_entry=None
@@ -35,7 +38,8 @@ class SyncLastFMDKPlugin (rb.Plugin):
         self.shell = shell
         sp = shell.get_player ()
         self.cb = (
-                   sp.connect ('playing-song-changed', self.playing_song_changed)
+                   sp.connect ('playing-song-changed', 
+                               self.playing_song_changed)
                    )
 
     def deactivate (self, shell):
@@ -46,6 +50,10 @@ class SyncLastFMDKPlugin (rb.Plugin):
             sp.disconnect (id)
 
     def create_configure_dialog(self, dialog=None):
+        """
+        This method is called by RB when "configure" button
+        is pressed in the "Edit->Plugins" menu.
+        """
         if not dialog:
             glade_file_path=self.find_file("config.glade")
             proxy=ConfigDialog(glade_file_path)
