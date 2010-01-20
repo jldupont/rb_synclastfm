@@ -4,11 +4,188 @@
     @author: jldupont
 """
 from xml.sax.handler import ContentHandler
+from xml.sax import make_parser
+import StringIO
+    
+__all__=["processResponse"]
+
+def processResponse(data):
+    """
+    Processes a response from Last.fm API
+    
+    @return: dict or None on error 
+    """
+    bus=HandlerBus()
+    tih=TrackInfoHandler()
+    bus.add(tih)
+    
+    par=make_parser()
+    par.setContentHandler(bus)
+    sio=StringIO.StringIO(data)
+    
+    try:
+        par.parse(sio)
+        return tih.props
+    except:
+        return None
+    
+
+class HandlerException(Exception):
+    """
+    Generic Handler exception
+    """
+
+class HandlerBus(ContentHandler):
+    """
+    Distributes the XML parsing events 
+    to the registered objects
+    """
+    def __init__(self):
+        self._regs=[]
+        
+    def add(self, reg):
+        self._regs.append(reg)
+        
+    def startElement(self, name, attrs):
+        for r in self._regs:
+            r.startElement(name, attrs)
+    
+    def characters(self, ch):
+        for r in self._regs:
+            r.characters(ch)
+                
+    def endElement(self, name):
+        for r in self._regs:
+            r.endElement(name)
+            
+
+class TrackInfoHandler(object):
+    """
+    TrackInfo response handler
+    """
+    
+    def __init__(self):
+        self._state="begin"
+        self._acc=""
+        self.valid=False
+        self.props={"track.tags":[]}
+    
+    ## ================================== Event callbacks
+    
+    def startElement(self, tag, attrs):
+        self._dispatch(("startElement", tag, attrs))
+    
+    def characters(self, ch):
+        self._acc+=ch
+                
+    def endElement(self, tag):
+        self._dispatch(("endElement", tag, self._acc.strip()))
+        self._acc=""
+    
+    ## ===================================
+    def _missingState(self, _event):
+        raise HandlerException("missing state(%s)" % self._state)
+    
+    def _dispatch(self, event):
+        methodName="_st_"+self._state
+        getattr(self, methodName, self._missingState)(event)
+        
+    ## =================================== State related handlers
+    
+    def _st_begin(self, (e, name, _)):
+        """
+        Initial state
+        lfm -> skip to track
+        """
+        if (e != "startElement"):
+            self._state="stop"
+            return
+        
+        if (name != "lfm"):
+            self._state="stop"
+            return
+        
+        self._state="wait_track"
+        
+    def _st_wait_track(self, (e, name, v)):
+        if (e!="startElement"):
+            self._state="stop"
+            return
+        if (name!="track"):
+            self._state="stop"
+            return
+            
+        self._state="wait_track_child"
+        
+    _track_childs = ["id", "name", "mbid", "url",
+                     "duration", "userplaycount", "userloved"
+                     ]
+        
+    def _st_wait_track_child(self, (e, name, v)):
+        #print "wait_track_child: e(%s) name(%s) v(%s)" % (e, name, v)
+        if (e=="endElement"):
+            if name in self._track_childs:
+                self.props["track.%s" % name] = v
+                self.valid=True                
+                return
+
+        if (e=="startElement"):
+            if (name=="artist"):
+                self._state="wait_track_artist"
+                return
+            if (name=="album"):
+                self._state="wait_track_album"
+                return
+            if (name=="toptags"):
+                self._state="wait_tags"
+                return
+
+    _track_artist_childs = ["name", "mbid", "url"]
+
+    def _st_wait_track_artist(self, (e, name, v)):
+        if (e=="endElement"):
+            if (name=="artist"):
+                self._state="wait_track_child"
+                return
+
+            if name in self._track_artist_childs:
+                self.props["track.artist.%s" % name] = v
+                self.valid=True
+                return
+
+    _track_album_childs= ["artist", "title", "mbid", "url"]
+                
+    def _st_wait_track_album(self, (e, name, v)):
+        if (e=="endElement"):
+            if (name=="album"):
+                self._state="wait_track_child"
+                return
+
+            if name in self._track_album_childs:
+                self.props["track.album.%s" % name] = v
+                self.valid=True
+                return
+
+    def _st_wait_tags(self, (e, name, v)):
+        if (e=="endElement"):
+            if (name=="toptags"):
+                self._state="wait_track_child"
+                return
+        
+        if (e=="endElement"):
+            if (name=="name"):
+                self.props["track.tags"].append(v)
+
+
+    def _st_stop(self, _event):
+        pass
+        
+    
 
 
 class gHandler(ContentHandler):
     """
-    Generic handler
+    Generic handler - not used at the moment
     
     The OP must be a callable object instance i.e.
     implement the __call__ method.
@@ -51,7 +228,7 @@ class gHandler(ContentHandler):
         
         #Top level related
         if self.topLevel and self.dropTopLevel:
-            self.output(self.stack, _attrs, None)
+            self.output((self.stack, _attrs, None))
             self.stack.pop()
             self.attrs = None
         self.topLevel=False
@@ -70,7 +247,7 @@ class gHandler(ContentHandler):
         self.acc = self.acc.strip()
         
         if self.acc:
-            self.output(self.stack, self.attrs, self.acc)
+            self.output((self.stack, self.attrs, self.acc))
             self.acc=""
         
         self.attrs= None
@@ -79,6 +256,9 @@ class gHandler(ContentHandler):
         try:    self.prev.append( self.stack.pop() )
         except: pass
         
+
+
+
 
 ## ================================================== Tests
 
@@ -169,8 +349,9 @@ if __name__=="__main__":
 </recenttracks></lfm>
 """
 
+    """
     class DebugProc():
-        def __call__(self, key, attrs, value):
+        def __call__(self, (key, attrs, value)):
             print "key: %s, value:%s" % (key, value)
             
     from xml.sax import make_parser 
@@ -182,6 +363,20 @@ if __name__=="__main__":
     par.setContentHandler(gh)
     
     import StringIO
-    sio=StringIO.StringIO(r_user_getrecenttracks)
+    sio=StringIO.StringIO(r_track_info)
     par.parse(sio)
     
+    """
+    bus=HandlerBus()
+    tih=TrackInfoHandler()
+    bus.add(tih)
+    
+    from xml.sax import make_parser 
+    par=make_parser()
+    par.setContentHandler(bus)
+    import StringIO
+    sio=StringIO.StringIO(r_track_info)
+    #sio=StringIO.StringIO(r_user_getrecenttracks)
+    par.parse(sio)
+    
+    print tih.props

@@ -22,7 +22,12 @@
 """
 import rhythmdb, rb #@UnresolvedImport
 
+from bus import Bus
+from lastfm import lfmagent
+from user import lfmuser
 from config import ConfigDialog
+from track import Track
+
 PLUGIN_NAME="synclastfm"
 
 class SyncLastFMDKPlugin (rb.Plugin):
@@ -39,7 +44,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
         sp = shell.get_player ()
         self.cb = (
                    sp.connect ('playing-song-changed', 
-                               self.playing_song_changed)
+                               self.playing_song_changed),
                    )
 
     def deactivate (self, shell):
@@ -69,7 +74,9 @@ class SyncLastFMDKPlugin (rb.Plugin):
         event "playing_changed"
         """
         self.current_entry = sp.get_playing_entry()
-        
+        entry=EntryHelper.track_details(self.shell, entry)
+        track=Track(entry)
+        Bus.emit("playing_song_changed", track)
 
 
 

@@ -46,5 +46,6 @@ if __name__ == "__main__":
         print "callback: %s" % result
     
     s=Sapi(api_key="b25b959554ed76058ac220b7b2e0a026", loader=loader())
-    #s(callback=callback, method="track.getinfo", artist="Depeche Mode", track="Little 15", username="jldupont")
-    s(callback=callback, method="user.getRecentTracks", user="jldupont")
+    #s(callback=callback, method="track.getinfo", artist="Depeche Mode", track="ALittle 15", username="jldupont")
+    s(callback=callback, method="track.getinfo", artist="Depeche Mode", track="ALittle 15", username="")
+    #s(callback=callback, method="user.getRecentTracks", user="jldupont")

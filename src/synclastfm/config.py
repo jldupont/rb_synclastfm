@@ -11,20 +11,29 @@
 """
 
 import gtk
+import gobject
 
 
-class ConfigDialog(object):
+class ConfigDialog(gobject.GObject):
+    
+    __gsignals__ = {
+        "lastfm_username_changed": (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,)) #@UndefinedVariable
+        }
+    
     def __init__(self, glade_file, testing=False):
+        gobject.GObject.__init__(self)
         self.testing=testing
-        builder = gtk.Builder()
-        builder.add_from_file(glade_file)
-        self.dialog = builder.get_object("config_dialog")
+        self.builder = gtk.Builder()
+        self.builder.add_from_file(glade_file)
+        self.dialog = self.builder.get_object("config_dialog")
         self.dialog._testing=testing
-        self.dialog._builder=builder
+        self.dialog._builder=self.builder
         
         self._dowiring()
         
-        builder.connect_signals(self.dialog, self.dialog)
+        self.builder.connect_signals(self.dialog, self.dialog)
+        
+        gobject.add_emission_hook(self, "lastfm_username_changed", self.on_username_changed)
 
     def _dowiring(self):
         """
@@ -40,8 +49,13 @@ class ConfigDialog(object):
 
     ## ===================================== Signal Handlers
     def on_username_changed(self, username, data=None):
-        pass
-
+        """
+        GObject handler
+        """        
+        print "Config.on_username_changed  data=%s" % str(data)
+        t=self.builder.get_object("lastfm_username_entry")
+        t.set_text(data)
+        return True
 
     def on_close_clicked(el, dialog): #@NoSelf
         dialog.hide()
@@ -57,6 +71,9 @@ class ConfigDialog(object):
 ## ==================================================== Tests
 
 if __name__=="__main__":
+    import user
+    u=user.LastFMUser()
+    
     
     window = ConfigDialog("config.glade", testing=True)
     d=window.get_dialog()
@@ -65,7 +82,11 @@ if __name__=="__main__":
     #print d._testing
     b=d._builder
     t=b.get_object("lastfm_username_entry")
-    print dir(t)
+    #print dir(t)
     t.set_text("test!")
     #usernameObject=window.get_object("lastfm_username_entry")
+    
+    u.refresh()
+    #u.emit("lastfm_username_changed", "jldupont")
+    
     gtk.main()

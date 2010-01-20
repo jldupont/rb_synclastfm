@@ -3,11 +3,15 @@
     @author: jldupont
 """
 
-class Track(object):
+import gobject
+
+class Track(gobject.GObject):
     """
     Last.fm Track proxy
     """
-    def __init__(self):
-        pass
+    def __init__(self, details):
+        gobject.GObject.__init__(self)
+        self.details=details
+        
     
     
