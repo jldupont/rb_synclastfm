@@ -3,7 +3,7 @@
 
     @author: jldupont
 """
-import gobject
+import gobject  #@UnresolvedImport
 
 from bus import Bus
 from rbloader import RbLoader
@@ -12,6 +12,28 @@ import rapi
 
 __all__ = ["lfmagent"]
 
+
+class LastFmResponseCallback(object):
+    """
+    Contextual callback - holds a reference 
+    to a Track object instance
+    
+    @param track: Track instance
+    """
+    def __init__(self, track):
+        self.track=track
+
+    def __call__(self, response):
+        try:
+            track_info=rapi.processResponse(response)
+            self.track.lastfm_info=track_info
+            Bus.emit("user_track_info", self.track)
+            print "!! LastFmResponseCallback: track_info: " + str(track_info)            
+        except Exception,e:
+            print "LastFmResponseCallback: Exception: " + str(e)
+            Bus.emit("lastfm_request_failed")
+        
+        
  
 class LastFmAgent(gobject.GObject):
     def __init__(self, sapi):
@@ -32,28 +54,18 @@ class LastFmAgent(gobject.GObject):
     def on_playing_song_changed(self, _signal, track):
         """
         GObject handler
+        
+        @param: an instance of the Track class
         """
-        print "LastFmAgent: on_playing_song_changed, username=%s, track=%s," % (self._lfmusername, str(track))
-        self._sapi(callback=self._lastfm_response, 
+        #print "LastFmAgent: on_playing_song_changed, username=%s, track=%s," % (self._lfmusername, str(track))
+        cb=LastFmResponseCallback(track)
+        self._sapi(callback=cb, 
                    method="track.getinfo", 
                    artist=track.details["artist"], 
                    track=track.details["track"],
                    username=self._lfmusername)
         return True #required for gobject
 
-        
-    def _lastfm_response(self, response):
-        """
-        Callback of "sapi" based call
-        
-        For now, only "track info" can end-up here
-        """
-        #print response
-        try:
-            track_info=rapi.processResponse(response)
-            Bus.emit("user_track_info", track_info)
-        except:
-            Bus.emit("lastfm_request_failed")
 
 gobject.type_register(LastFmAgent)
 

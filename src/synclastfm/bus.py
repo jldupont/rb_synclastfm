@@ -4,18 +4,29 @@
     @author: jldupont
 """
 
-import gobject
+import gobject #@UnresolvedImport
 
 class Signals(gobject.GObject):
     """
     List of the application level signals
     """
     __gsignals__ = {
+                    
+        ## Announces changes in the user's Last.fm properties
         "lastfm_username_changed":  (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,)) 
         ,'lastfm_password_changed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,))
-        ,'lastfm_request_failed':   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
+
+        ## Used to signal a change in the currently playing track
         ,"playing_song_changed":    (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))
-        ,"user_track_info":         (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))                
+        
+        ## Used to report a failure when accessing Last.fm web service
+        ,'lastfm_request_failed':   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())
+        
+        ## Used for distributing the results of the query against the Last.fm web service
+        ,"user_track_info":         (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))
+        
+        ## Used to pass around the "shell" global object
+        ,"rb_shell":                (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))              
     }
 
     def __init__(self):

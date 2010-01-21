@@ -18,12 +18,17 @@
     - Username for Last.fm account can't be found
     - Failure to communicate with Last.fm
     - Track cannot be found on Last.fm 
+      - Wrong/insufficient detail locally
     
 """
 import rhythmdb, rb #@UnresolvedImport
 
 from bus import Bus
-from lastfm import lfmagent
+from helpers import EntryHelper, WrapperGObject
+
+import lastfm
+from updater import upd
+
 from user import lfmuser
 from config import ConfigDialog
 from track import Track
@@ -41,12 +46,19 @@ class SyncLastFMDKPlugin (rb.Plugin):
 
     def activate (self, shell):
         self.shell = shell
-        sp = shell.get_player ()
+        sp = shell.get_player()
+        
+        ## We might have other signals to connect to in the future
         self.cb = (
                    sp.connect ('playing-song-changed', 
                                self.playing_song_changed),
                    )
-
+        ## Distribute the shell around
+        rbobjects=WrapperGObject(shell=self.shell, 
+                                 db=self.shell.props.db, 
+                                 player=self.shell.get_player())
+        Bus.emit("rb_shell", rbobjects)
+        
     def deactivate (self, shell):
         self.shell = None
         sp = shell.get_player()
@@ -74,34 +86,10 @@ class SyncLastFMDKPlugin (rb.Plugin):
         event "playing_changed"
         """
         self.current_entry = sp.get_playing_entry()
-        entry=EntryHelper.track_details(self.shell, entry)
-        track=Track(entry)
-        Bus.emit("playing_song_changed", track)
+        details=EntryHelper.track_details(self.shell, entry)
+        if details:
+            track=Track(details=details, entry=self.current_entry)
+            Bus.emit("playing_song_changed", track)
 
 
 
-class EntryHelper:
-    """
-    Helper functions for song database entries
-    """
-    props = {   "artist":    rhythmdb.PROP_ARTIST
-                ,"album":    rhythmdb.PROP_ALBUM
-                ,"duration": rhythmdb.PROP_DURATION
-                ,"track":    rhythmdb.PROP_TITLE
-                ,"mb_id":    rhythmdb.PROP_MUSICBRAINZ_TRACKID
-                ,"duration": rhythmdb.PROP_DURATION
-             }
-    
-    @classmethod
-    def track_details(cls, shell, entry):
-        """
-        Retrieves details associated with a db entry
-        
-        @return: (artist, title)
-        """
-        db = shell.props.db
-        result={}
-        for prop, key in cls.props.iteritems():
-            result[prop]=db.entry_get(entry, key)
-        return result
-    

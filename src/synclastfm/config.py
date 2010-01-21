@@ -10,8 +10,8 @@
 
 """
 
-import gtk
-import gobject
+import gtk      #@UnresolvedImport
+import gobject  #@UnresolvedImport
 
 
 class ConfigDialog(gobject.GObject):
@@ -72,7 +72,7 @@ class ConfigDialog(gobject.GObject):
 
 if __name__=="__main__":
     import user
-    u=user.LastFMUser()
+    u=user.LastFmUser()
     
     
     window = ConfigDialog("config.glade", testing=True)

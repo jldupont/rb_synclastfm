@@ -371,10 +371,8 @@ if __name__=="__main__":
     tih=TrackInfoHandler()
     bus.add(tih)
     
-    from xml.sax import make_parser 
     par=make_parser()
     par.setContentHandler(bus)
-    import StringIO
     sio=StringIO.StringIO(r_track_info)
     #sio=StringIO.StringIO(r_user_getrecenttracks)
     par.parse(sio)
