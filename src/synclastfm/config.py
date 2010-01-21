@@ -13,6 +13,7 @@
 import gtk      #@UnresolvedImport
 import gobject  #@UnresolvedImport
 
+from bus import Bus
 
 class ConfigDialog(gobject.GObject):
     
@@ -33,7 +34,7 @@ class ConfigDialog(gobject.GObject):
         
         self.builder.connect_signals(self.dialog, self.dialog)
         
-        gobject.add_emission_hook(self, "lastfm_username_changed", self.on_username_changed)
+        Bus.add_emission_hook("lastfm_username_changed", self.on_username_changed)
 
     def _dowiring(self):
         """

@@ -53,7 +53,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
                    sp.connect ('playing-song-changed', 
                                self.playing_song_changed),
                    )
-        ## Distribute the shell around
+        ## Distribute the vital RB objects around
         rbobjects=WrapperGObject(shell=self.shell, 
                                  db=self.shell.props.db, 
                                  player=self.shell.get_player())
@@ -70,21 +70,27 @@ class SyncLastFMDKPlugin (rb.Plugin):
         """
         This method is called by RB when "configure" button
         is pressed in the "Edit->Plugins" menu.
+        
+        Note that the dialog *shouldn't* be destroyed but "hidden" 
+        when either the "close" or "X" buttons are pressed.
         """
         if not dialog:
             glade_file_path=self.find_file("config.glade")
             proxy=ConfigDialog(glade_file_path)
             dialog=proxy.get_dialog() 
         dialog.present()
+        lfmuser.refresh()
         return dialog
 
             
     def playing_song_changed (self, sp, entry):
         """
-        Just grab the current playing entry
-        The rest of the work will be done through the
-        event "playing_changed"
+        The event that starts the whole "sync" process
         """
+        ## unfortunately, I don't have a better process
+        ## for keeping the "user parameters" synced just yet...
+        lfmuser.refresh()
+        
         self.current_entry = sp.get_playing_entry()
         details=EntryHelper.track_details(self.shell, entry)
         if details:

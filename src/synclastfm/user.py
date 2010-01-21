@@ -3,8 +3,8 @@
     
     @author: jldupont
 """
-import gconf
-import gobject
+import gconf    #@UnresolvedImport
+import gobject  #@UnresolvedImport
 
 ## locals
 from bus import Bus
@@ -93,8 +93,8 @@ if __name__=="__main__":
     def callback(self, data):
         print "callback, data=%s" % str(data)
         
-    mbus.add_emission_hook("lastfm_username_changed", callback)
-    mbus.add_emission_hook("lastfm_password_changed", callback)
+    Bus.add_emission_hook("lastfm_username_changed", callback)
+    Bus.add_emission_hook("lastfm_password_changed", callback)
     
     u.refresh()
     

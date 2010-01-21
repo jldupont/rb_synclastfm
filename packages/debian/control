@@ -1,0 +1,15 @@
+Source: rbsynclastfm
+Priority: optional
+Section: devel
+Build-Depends: python (>= 2.5), debhelper (>= 7), python-support (>= 0.5.3), python-setuptools
+Standards-Version: 3.8.0
+Maintainer: Jean-Lou Dupont <jl@jldupont.com>
+Homepage: http://jldupont.blogspot.com/
+
+Package: rbsynclastfm
+Architecture: all
+Depends: rhythmbox(>= 0.12.5), python (>= 2.5), ${misc:Depends}, ${python:Depends}
+Description: Rhythmbox plugin for syncing "playcount" and "love" fields stored on a 
+ user's Last.fm account down to the local Rhythmbox.
+ For more details, please see http://github.com/jldupont/rb_synclastfm
+ .

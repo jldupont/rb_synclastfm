@@ -9,7 +9,7 @@ Features
 1. Fill "rating" with "loved" field: when a track is locally unrated (i.e. not rating on Rhythmbox), the "loved" field of the track
 is checked from the user's profile on Last.fm; if the track is "loved" then the track rating will be set to "5 stars". 
 
-2. Download "play count": the count associated with a track is downloaded from Last.fm.
+2. Download "play count": the count associated with a track is downloaded from Last.fm and the local "playcount" field is updated if the count retrieved from last.fm is greater than 0.
 
 Installation
 ============
