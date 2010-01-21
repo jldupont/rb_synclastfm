@@ -1,5 +1,5 @@
 rbsynclastfm (_VERSION_-1jldupont1~_DIST_1)  _DIST_; urgency=low
 
-  * Fixed wrong install location for .rb-plugin file
+  * Fixed missing .glade file
  
  -- Jean-Lou Dupont <jl@jldupont.com>  Thu, 21 Jan 2010 07:17:00 -0500
