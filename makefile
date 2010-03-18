@@ -44,7 +44,6 @@ orig:
 	@echo "** SUCCESS: folder ready: /tmp/$(PRJ)"
 	@echo "*** DON'T FORGET TO UPDATE debian/changelog ***"
 
-ppa:
 	@echo "!!! Have you updated debian/changelog ?"
 
 	@echo "Running 'debuild'"
@@ -60,4 +59,4 @@ pb:
 	@echo " RUNNING PBUILDER "
 	@cd "/tmp/$(PRJ)/" && sudo DIST=${DIST} pbuilder build *.dsc
 
-.PHONY: orig ppa pb
+.PHONY: orig pb

@@ -73,8 +73,8 @@ class LastFmUser(gobject.GObject):
         raise AttributeError("unknown property %s" % property.name)
       
     def _announceChanges(self):
-        Bus.emit("lastfm_username_changed", self.get_property("username"))
-        Bus.emit("lastfm_password_changed", self.get_property("password"))
+        Bus.emit("lastfm_username_changed", self._username)
+        Bus.emit("lastfm_password_changed", self._password)
       
 
 gobject.type_register(LastFmUser)

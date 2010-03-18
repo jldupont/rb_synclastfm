@@ -1,0 +1,10 @@
+Accessing "Sources"
+===================
+
+Source Groups:
+	sl=shell.props.sourcelist
+	slm=sl.props.model
+	
+	R0=slm[0]  # Library
+	R1=slm[1]  # Playlists
+	R2=slm[2]  # Shared
