@@ -28,7 +28,7 @@ class LastFmResponseCallback(object):
             track_info=rapi.processResponse(response)
             self.track.lastfm_info=track_info
             Bus.emit("user_track_info", self.track)
-            print "!! LastFmResponseCallback: track_info: " + str(track_info)            
+            #print "!! LastFmResponseCallback: track_info: " + str(track_info)            
         except Exception,e:
             print "LastFmResponseCallback: Exception: " + str(e)
             Bus.emit("lastfm_request_failed")

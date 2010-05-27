@@ -21,6 +21,10 @@
       - Wrong/insufficient detail locally
     
 """
+from dbus.mainloop.glib import DBusGMainLoop
+DBusGMainLoop(set_as_default=True)
+
+
 import rhythmdb, rb #@UnresolvedImport
 
 from bus import Bus
@@ -32,6 +36,7 @@ from updater import upd
 from user import lfmuser
 from config import ConfigDialog
 from track import Track
+import lastfmsqlite
 
 PLUGIN_NAME="synclastfm"
 
@@ -56,7 +61,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
                    )
         ## Distribute the vital RB objects around
         rbobjects=WrapperGObject(shell=self.shell, 
-                                 db, 
+                                 db=db, 
                                  player=self.shell.get_player())
         Bus.emit("rb_shell", rbobjects)
         
