@@ -59,7 +59,7 @@ class Updater(gobject.GObject):
         try:    lfmpc=int(track.lastfm_info.get("track.userplaycount", 0))
         except: lfmpc=0
         
-        print ">> rating(%s) love(%s) local playcount(%s) lastfm playcount(%s)" % (rating, love, lpc, lfmpc)
+        #print ">> rating(%s) love(%s) local playcount(%s) lastfm playcount(%s)" % (rating, love, lpc, lfmpc)
         
         try:
             changed=False
