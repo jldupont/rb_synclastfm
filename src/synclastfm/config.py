@@ -54,7 +54,7 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         """
         GObject handler
         """        
-        print "Config.on_username_changed  data=%s" % str(data)
+        #print "Config.on_username_changed  data=%s" % str(data)
         t=self.builder.get_object("lastfm_username_entry")
         t.set_text(data)
         return True
@@ -70,11 +70,11 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
             gtk.main_quit()
     
 
-    def on_lastfmsqlite_detected(self, state):
+    def on_lastfmsqlite_detected(self, _state, data=None):
         """
         """
         t=self.builder.get_object("lastfmsqlite_detected_button")
-        active=state or state=="1" or state=="True"
+        active=data==True or data=="1" or data=="True"
         t.set_active(active)
         
 

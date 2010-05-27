@@ -26,7 +26,13 @@ class Signals(gobject.GObject): #@UndefinedVariable
         ,"user_track_info":         (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
         
         ## Used to pass around the "shell" global object
-        ,"rb_shell":                (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable            
+        ,"rb_shell":                (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
+        ## Used to pass around "Records" from lastfmsqlite
+        ,"records":                 (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+        
+        ## Used to signal the detection of LastfmSqlite
+        ,"lastfmsqlite_detected":   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_BOOLEAN,))  #@UndefinedVariable
     }
 
     def __init__(self):

@@ -8,8 +8,19 @@ import dbus.service
 import gobject #@UnresolvedImport
 from bus import Bus
 
+
+class Records(gobject.GObject):        #@UndefinedVariable
+    """
+    Basic wrapper for Records
+    """
+    def __init__(self, source_obj):
+        gobject.GObject.__init__(self) #@UndefinedVariable
+        self.obj=source_obj
+        
+
 class DbusInterface(dbus.service.Object):
     """
+    DBus interface - listening for signals from LastfmSqlite
     """
     PATH="/Records"
     
@@ -19,12 +30,17 @@ class DbusInterface(dbus.service.Object):
     @dbus.service.signal(dbus_interface="com.jldupont.lastfmsqlite", signature="vv")
     def qRecords(self, ts, limit):
         """
+        Signal Emitter - qRecords
         """
 
     def sRecords(self, records):
         """
+        Signal Receptor - Records
         """
-        print "Records: %s" % str(records)
+        rs=Records(records)
+        Bus.emit("records", rs)
+        Bus.emit("lastfmsqlite_detected", True)
+        
         
 
 dbusif=DbusInterface()
@@ -34,6 +50,7 @@ dbus.Bus().add_signal_receiver(dbusif.sRecords,
                                bus_name=None, 
                                path="/Records")
     
+
 
 class LastfmSqlite(gobject.GObject): #@UndefinedVariable
     """

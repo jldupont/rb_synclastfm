@@ -48,7 +48,7 @@ class LastFmAgent(gobject.GObject):    #@UndefinedVariable
         GObject handler
         """        
         self._lfmusername=username
-        print "LastFmAgent: username=%s" % username
+        #print "LastFmAgent: username=%s" % username
         return True #required for gobject
         
     def on_playing_song_changed(self, _signal, track):
