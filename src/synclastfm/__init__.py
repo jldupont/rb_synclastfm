@@ -47,6 +47,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
     def activate (self, shell):
         self.shell = shell
         sp = shell.get_player()
+        db=self.shell.props.db
         
         ## We might have other signals to connect to in the future
         self.cb = (
@@ -55,7 +56,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
                    )
         ## Distribute the vital RB objects around
         rbobjects=WrapperGObject(shell=self.shell, 
-                                 db=self.shell.props.db, 
+                                 db, 
                                  player=self.shell.get_player())
         Bus.emit("rb_shell", rbobjects)
         

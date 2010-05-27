@@ -9,7 +9,7 @@ import gobject  #@UnresolvedImport
 ## locals
 from bus import Bus
 
-class LastFmUser(gobject.GObject): 
+class LastFmUser(gobject.GObject):  #@UndefinedVariable
     """
     A Last.fm user proxy
     
@@ -18,16 +18,16 @@ class LastFmUser(gobject.GObject):
     """
     __gproperties__ = {
         "username":  (gobject.TYPE_STRING, "username on Last.fm", 
-                     "username property of the user on Last.fm", "", gobject.PARAM_READWRITE)
+                     "username property of the user on Last.fm", "", gobject.PARAM_READWRITE) #@UndefinedVariable
         ,"password": (gobject.TYPE_STRING, "password on Last.fm", 
-                     "password property of the user on Last.fm", "", gobject.PARAM_READWRITE)
+                     "password property of the user on Last.fm", "", gobject.PARAM_READWRITE) #@UndefinedVariable
         
     }
 
     PATH="/apps/rhythmbox/audioscrobbler/%s"
     
     def __init__(self, username=None, password=None):
-        gobject.GObject.__init__(self)
+        gobject.GObject.__init__(self) #@UndefinedVariable
         self._username=username
         self._password=password
         
@@ -77,7 +77,7 @@ class LastFmUser(gobject.GObject):
         Bus.emit("lastfm_password_changed", self._password)
       
 
-gobject.type_register(LastFmUser)
+gobject.type_register(LastFmUser) #@UndefinedVariable
         
 lfmuser=LastFmUser()
 lfmuser.refresh()

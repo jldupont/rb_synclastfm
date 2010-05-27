@@ -35,9 +35,9 @@ class LastFmResponseCallback(object):
         
         
  
-class LastFmAgent(gobject.GObject):
+class LastFmAgent(gobject.GObject):    #@UndefinedVariable
     def __init__(self, sapi):
-        gobject.GObject.__init__(self)
+        gobject.GObject.__init__(self) #@UndefinedVariable
         self._sapi = sapi
         self._lfmusername=""
         Bus.add_emission_hook("playing_song_changed",    self.on_playing_song_changed)
@@ -67,7 +67,7 @@ class LastFmAgent(gobject.GObject):
         return True #required for gobject
 
 
-gobject.type_register(LastFmAgent)
+gobject.type_register(LastFmAgent) #@UndefinedVariable
 
 
 ## Inits

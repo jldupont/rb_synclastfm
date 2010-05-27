@@ -7,6 +7,7 @@ import gobject  #@UnresolvedImport
 
 import rhythmdb #@UnresolvedImport
 
+
 class EntryHelper(object):
     """
     Helper functions for song database entries
@@ -38,16 +39,15 @@ class EntryHelper(object):
         return result
    
 
-
-class WrapperGObject(gobject.GObject):
+class WrapperGObject(gobject.GObject): #@UndefinedVariable
     """
     Wrapper for non-gobject objects
     """
     def __init__(self, **kw):
-        gobject.GObject.__init__(self)
+        gobject.GObject.__init__(self) #@UndefinedVariable
         self.__dict__.update(kw)
 
-gobject.type_register(WrapperGObject)
+gobject.type_register(WrapperGObject) #@UndefinedVariable
 
 
 ## ===================================================== TESTS

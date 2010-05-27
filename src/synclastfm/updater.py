@@ -16,7 +16,7 @@ import gobject #@UnresolvedImport
 from bus import Bus
 
 
-class Updater(gobject.GObject):
+class Updater(gobject.GObject): #@UndefinedVariable
     """
     Updates various properties
     """
@@ -51,7 +51,7 @@ class Updater(gobject.GObject):
         ## These are always guaranteed to be since
         ## they originate from RB
         rating=track.details["rating"]
-        lpc=track.details["playcount"]
+        #lpc=track.details["playcount"]
         
         ## These might be missing
         try:    love=int(track.lastfm_info.get("track.userloved", 0))
@@ -86,6 +86,6 @@ class Updater(gobject.GObject):
             
         return True
 
-gobject.type_register(Updater)
+gobject.type_register(Updater) #@UndefinedVariable
 
 upd=Updater()

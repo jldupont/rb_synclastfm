@@ -11,6 +11,8 @@ is checked from the user's profile on Last.fm; if the track is "loved" then the 
 
 2. Download "play count": the count associated with a track is downloaded from Last.fm and the local "playcount" field is updated if the count retrieved from last.fm is greater than 0.
 
+3. Interface to "lastfmsqlite" through DBus: provides "syncing" of 'playcount' of the user's tracks from the "Recent Tracks" journal on Last.fm. 
+
 Installation
 ============
 There are 2 methods:

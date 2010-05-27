@@ -15,14 +15,14 @@ import gobject  #@UnresolvedImport
 
 from bus import Bus
 
-class ConfigDialog(gobject.GObject):
+class ConfigDialog(gobject.GObject): #@UndefinedVariable
     
     __gsignals__ = {
         "lastfm_username_changed": (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,)) #@UndefinedVariable
         }
     
     def __init__(self, glade_file, testing=False):
-        gobject.GObject.__init__(self)
+        gobject.GObject.__init__(self) #@UndefinedVariable
         self.testing=testing
         self.builder = gtk.Builder()
         self.builder.add_from_file(glade_file)
@@ -35,6 +35,7 @@ class ConfigDialog(gobject.GObject):
         self.builder.connect_signals(self.dialog, self.dialog)
         
         Bus.add_emission_hook("lastfm_username_changed", self.on_username_changed)
+        Bus.add_emission_hook("lastfmsqlite_detected",   self.on_lastfmsqlite_detected)
 
     def _dowiring(self):
         """
@@ -49,7 +50,7 @@ class ConfigDialog(gobject.GObject):
         return self.dialog
 
     ## ===================================== Signal Handlers
-    def on_username_changed(self, username, data=None):
+    def on_username_changed(self, _username, data=None):
         """
         GObject handler
         """        
@@ -58,16 +59,24 @@ class ConfigDialog(gobject.GObject):
         t.set_text(data)
         return True
 
-    def on_close_clicked(el, dialog): #@NoSelf
+    def on_close_clicked(_el, dialog): #@NoSelf
         dialog.hide()
         if dialog._testing:
             gtk.main_quit()
 
-    def on_config_dialog_destroy(el, dialog): #@NoSelf
+    def on_config_dialog_destroy(_el, dialog): #@NoSelf
         dialog.hide()
         if dialog._testing:
             gtk.main_quit()
     
+
+    def on_lastfmsqlite_detected(self, state):
+        """
+        """
+        t=self.builder.get_object("lastfmsqlite_detected_button")
+        active=state or state=="1" or state=="True"
+        t.set_active(active)
+        
 
 ## ==================================================== Tests
 

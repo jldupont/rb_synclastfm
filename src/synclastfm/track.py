@@ -5,7 +5,7 @@
 
 import gobject #@UnresolvedImport
 
-class Track(gobject.GObject):
+class Track(gobject.GObject): #@UndefinedVariable
     """
     Last.fm Track proxy
     
@@ -14,7 +14,7 @@ class Track(gobject.GObject):
     @param lastfm_info: Info retrieved from Last.fm corresponding to the current track  
     """
     def __init__(self, details, entry=None, lastfm_info=None):
-        gobject.GObject.__init__(self)
+        gobject.GObject.__init__(self) #@UndefinedVariable
 
         self.details=details
         self.entry=entry
