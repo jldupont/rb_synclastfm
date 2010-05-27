@@ -33,6 +33,19 @@ class Signals(gobject.GObject): #@UndefinedVariable
         
         ## Used to signal the detection of LastfmSqlite
         ,"lastfmsqlite_detected":   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_BOOLEAN,))  #@UndefinedVariable
+        
+        ## Question: What is the "latest timestamp"
+        ,"q_last_ts":               (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())  #@UndefinedVariable
+        
+        ## Response: "last timestamp"
+        ,"last_ts":                 (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_UINT,))  #@UndefinedVariable
+        
+        ## An Entry being worked on
+        ,"entry":                   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
+        ## An Entry which has been updated
+        ,"entry_updated":           (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+        
     }
 
     def __init__(self):

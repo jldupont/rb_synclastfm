@@ -37,6 +37,9 @@ from user import lfmuser
 from config import ConfigDialog
 from track import Track
 import lastfmsqlite
+import state
+import finder
+
 
 PLUGIN_NAME="synclastfm"
 

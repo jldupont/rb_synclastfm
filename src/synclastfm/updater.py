@@ -64,21 +64,22 @@ class Updater(gobject.GObject): #@UndefinedVariable
         try:
             changed=False
             
-            ## Only update local "playcount" if we have a meaningful playcount from Last.fm
+            ## Only update local "playcount" if we have a meaningful 
+            ## playcount from Last.fm
             if lfmpc > 0:
                 self._db.set(track.entry, rhythmdb.PROP_PLAY_COUNT, lfmpc)
                 changed=True
-                print ">> Updating playcount to: %s" % lfmpc
+                #print ">> Updating playcount to: %s" % lfmpc
             
             ## Only update the "rating" if we have no rating yet locally
             if love:
                 if rating == 0: #works with float
                     self._db.set(track.entry, rhythmdb.PROP_RATING, 5.0)
                     changed=True
-                    print ">> Updating rating to 5.0"
+                    #print ">> Updating rating to 5.0"
                     
             if changed:
-                print ">> Committing change to database"
+                #print ">> Committing change to database"
                 self._db.commit()
                 
         except Exception, e:

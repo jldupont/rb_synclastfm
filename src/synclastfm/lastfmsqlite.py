@@ -1,4 +1,11 @@
 """
+    LastfmSqlite DBus interface
+    
+    Emits:
+    - "entry"
+    - "lastfmsqlite_detected"
+    
+
     @author: jldupont
     @date: May 27, 2010
 """
@@ -16,7 +23,23 @@ class Records(gobject.GObject):        #@UndefinedVariable
     def __init__(self, source_obj):
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.obj=source_obj
+
         
+class TrackEntry(gobject.GObject):     #@UndefinedVariable
+    def __init__(self):
+        gobject.GObject.__init__(self) #@UndefinedVariable
+        self.props={}
+        
+    def __setitem__(self, key, value):
+        self.props[key]=value
+        
+    def __getitem__(self, key):
+        return self.props.get(key, None)
+    
+    def keys(self):
+        return self.props.keys()
+
+    
 
 class DbusInterface(dbus.service.Object):
     """
@@ -37,8 +60,15 @@ class DbusInterface(dbus.service.Object):
         """
         Signal Receptor - Records
         """
-        rs=Records(records)
-        Bus.emit("records", rs)
+        for record in records:
+            entry=TrackEntry()
+
+            keys=record.keys()
+            for key in keys:
+                entry[str(key)]=record[str(key)]
+
+            Bus.emit("entry", entry)
+            
         Bus.emit("lastfmsqlite_detected", True)
         
         
@@ -56,6 +86,8 @@ class LastfmSqlite(gobject.GObject): #@UndefinedVariable
     """
     Updates various properties
     """
+    FETCH_LIMIT=100
+    
     def __init__(self, dbusif):
         gobject.GObject.__init__(self) #@UndefinedVariable
         self._shell=None
@@ -64,7 +96,8 @@ class LastfmSqlite(gobject.GObject): #@UndefinedVariable
         self._robjects=None
         self.dbusif=dbusif
         
-        Bus.add_emission_hook("rb_shell",        self.on_rb_shell)
+        Bus.add_emission_hook("rb_shell",  self.on_rb_shell)
+        Bus.add_emission_hook("last_ts",   self.h_last_ts)
         
     def on_rb_shell(self, _signal, rbobjects):
         """
@@ -80,15 +113,29 @@ class LastfmSqlite(gobject.GObject): #@UndefinedVariable
         self._sp.connect("playing-song-changed", self.on_playing_song_changed)
         return True
         
+    def h_last_ts(self, _, ts):
+        """
+        Receive the "last_ts" message
+        and asks for a "range" of records over DBus
+        to LastfmSqlite
+        """
+        self.dbusif.qRecords(ts, self.FETCH_LIMIT)
+                
+        
     def on_playing_song_changed(self, *_):
-        self.dbusif.qRecords(0, 100)
+        """
+        We need to grab the latest "timestamp" we have
+        so that we can ask for the correct "range" of records
+        with LastfmSqlite
+        """
+        Bus.emit("q_last_ts")
+
         
         
     def on_load_complete(self, *_):
         """
         """
-        print "LastfmSqlite.on_load_complete"
-        self.dbusif.qRecords(0, 100)
+        Bus.emit("q_last_ts")
 
 
 gobject.type_register(LastfmSqlite) #@UndefinedVariable
