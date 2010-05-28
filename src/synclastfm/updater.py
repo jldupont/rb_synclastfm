@@ -25,6 +25,7 @@ class Updater(gobject.GObject): #@UndefinedVariable
         self._shell=None
         self._db=None
         
+        Bus.add_emission_hook("track_entry",     self.on_track_entry)
         Bus.add_emission_hook("user_track_info", self.on_user_track_info)
         Bus.add_emission_hook("rb_shell",        self.on_rb_shell)
         
@@ -38,6 +39,27 @@ class Updater(gobject.GObject): #@UndefinedVariable
         self._db=self._robjects.db
         return True
         
+    def on_track_entry(self, _, trackWrapper):
+        """
+        Note: track_entry is defined in "Finder"
+        """
+        te=trackWrapper.track_entry
+        dbe=trackWrapper.db_entry
+        
+        ## If Finder didn't find an entry in the database,
+        ## we can't do much at this point
+        if dbe is None:
+            return True
+        
+        try:
+            playcount=te["playcount"]
+            self._db.set(dbe, rhythmdb.PROP_PLAY_COUNT, playcount)
+            self._db.commit()
+        except:
+            print "ERROR: updating 'playcount' for track"
+        
+        return True
+        
     def on_user_track_info(self, _signal, track):
         """
         GObject handler
@@ -48,10 +70,10 @@ class Updater(gobject.GObject): #@UndefinedVariable
         
         @param track: a Track object instance 
         """
+        
         ## These are always guaranteed to be since
         ## they originate from RB
         rating=track.details["rating"]
-        #lpc=track.details["playcount"]
         
         ## These might be missing
         try:    love=int(track.lastfm_info.get("track.userloved", 0))
@@ -61,8 +83,18 @@ class Updater(gobject.GObject): #@UndefinedVariable
         
         #print ">> rating(%s) love(%s) local playcount(%s) lastfm playcount(%s)" % (rating, love, lpc, lfmpc)
         
+        try:    track_mbid=str(track.lastfm_info.get("track.mbid", ""))
+        except: track_mbid=""
+       
         try:
             changed=False
+        
+            ## Update the track's mbid if we can
+            if track_mbid != "":
+                self._db.set(track.entry, rhythmdb.PROP_MUSICBRAINZ_TRACKID, track_mbid)
+                changed=True
+                #print "% track_mbid: %s" % track_mbid
+                
             
             ## Only update local "playcount" if we have a meaningful 
             ## playcount from Last.fm

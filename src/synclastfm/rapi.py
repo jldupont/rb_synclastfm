@@ -107,7 +107,7 @@ class TrackInfoHandler(object):
         
         self._state="wait_track"
         
-    def _st_wait_track(self, (e, name, v)):
+    def _st_wait_track(self, (e, name, _v)):
         if (e!="startElement"):
             self._state="stop"
             return
@@ -243,7 +243,7 @@ class gHandler(ContentHandler):
         self.acc+=ch
 
 
-    def endElement(self, name):
+    def endElement(self, _name):
         self.acc = self.acc.strip()
         
         if self.acc:

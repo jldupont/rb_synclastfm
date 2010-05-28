@@ -28,18 +28,41 @@ class LastFmResponseCallback(object):
             track_info=rapi.processResponse(response)
             self.track.lastfm_info=track_info
             Bus.emit("user_track_info", self.track)
-            #print "!! LastFmResponseCallback: track_info: " + str(track_info)            
+            #print "!! LastFmResponseCallback: user_track_info: " + str(track_info)            
         except Exception,e:
             print "LastFmResponseCallback: Exception: " + str(e)
             Bus.emit("lastfm_request_failed")
         
-        
+
+
+class LastFmResponseCallbackGeneric(object):
+    """
+    Generic Contextual callback 
+    
+    @param track: Track instance
+    """
+    def __init__(self, track):
+        self.track=track
+
+    def __call__(self, response):
+        try:
+            track_info=rapi.processResponse(response)
+            self.track.lastfm_info=track_info
+            Bus.emit("track_info", self.track)
+            #print "!! LastFmResponseCallback: track_info: " + str(track_info)            
+        except Exception,e:
+            print "LastFmResponseCallback: Exception: " + str(e)
+            Bus.emit("lastfm_request_failed")
+
+
  
 class LastFmAgent(gobject.GObject):    #@UndefinedVariable
     def __init__(self, sapi):
         gobject.GObject.__init__(self) #@UndefinedVariable
         self._sapi = sapi
         self._lfmusername=""
+        
+        Bus.add_emission_hook("q_track_info",            self.hq_track_info)
         Bus.add_emission_hook("playing_song_changed",    self.on_playing_song_changed)
         Bus.add_emission_hook("lastfm_username_changed", self.on_lastfm_username_changed)
         
@@ -48,7 +71,6 @@ class LastFmAgent(gobject.GObject):    #@UndefinedVariable
         GObject handler
         """        
         self._lfmusername=username
-        #print "LastFmAgent: username=%s" % username
         return True #required for gobject
         
     def on_playing_song_changed(self, _signal, track):
@@ -57,14 +79,30 @@ class LastFmAgent(gobject.GObject):    #@UndefinedVariable
         
         @param: an instance of the Track class
         """
-        #print "LastFmAgent: on_playing_song_changed, username=%s, track=%s," % (self._lfmusername, str(track))
         cb=LastFmResponseCallback(track)
+        self._fetch(cb, track)
+        return True #required for gobject
+
+
+    def hq_track_info(self, _, track):
+        """
+        Attempts to pull more information on a track
+        from Last.fm
+        
+        The track 'mbid' is what we are after mainly.
+        """
+        cb=LastFmResponseCallbackGeneric(track)
+        self._fetch(cb, track)
+            
+    def _fetch(self, cb, track):
+        
         self._sapi(callback=cb, 
                    method="track.getinfo", 
                    artist=track.details["artist"], 
                    track=track.details["track"],
                    username=self._lfmusername)
-        return True #required for gobject
+        
+        
 
 
 gobject.type_register(LastFmAgent) #@UndefinedVariable

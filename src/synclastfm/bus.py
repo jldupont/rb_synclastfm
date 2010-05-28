@@ -45,7 +45,14 @@ class Signals(gobject.GObject): #@UndefinedVariable
 
         ## An Entry which has been updated
         ,"entry_updated":           (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
-        
+
+        ## Question: track_info
+        ##  Response will be through "user_track_info"        
+        ,"q_track_info":            (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
+        ## Generated in Finder
+        ,"track_entry":             (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
     }
 
     def __init__(self):
