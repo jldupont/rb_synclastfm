@@ -47,7 +47,7 @@ class TrackEntry(gobject.GObject):     #@UndefinedVariable
 
 class DbusInterface(dbus.service.Object):
     """
-    DBus interface - listening for signals from LastfmSqlite
+    DBus interface - listening for signals from Lastfm Proxy Dbus
     """
     PATH="/Records"
     

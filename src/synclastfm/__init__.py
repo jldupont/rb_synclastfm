@@ -28,7 +28,7 @@ DBusGMainLoop(set_as_default=True)
 import rhythmdb, rb #@UnresolvedImport
 
 from system.bus import Bus
-from system.helpers import EntryHelper, WrapperGObject
+from helpers import EntryHelper, WrapperGObject
 
 import agents.lastfm
 import agents.updater
@@ -37,7 +37,7 @@ from agents.user import lfmuser
 from config import ConfigDialog
 from track import Track
 
-import agents.lastfm_proxy
+#import agents.lastfm_proxy
 import agents.state
 import agents.finder
 import agents.mb
@@ -122,7 +122,8 @@ dir(rhythmdb):
 'PROP_ALBUM_GAIN', 'PROP_ALBUM_PEAK', 'PROP_ALBUM_SORTNAME', 'PROP_ALBUM_SORT_KEY', 
 'PROP_ARTIST', 'PROP_ARTIST_FOLDED', 'PROP_ARTIST_SORTNAME', 'PROP_ARTIST_SORT_KEY', 
 'PROP_BITRATE', 'PROP_COPYRIGHT', 'PROP_DATE', 'PROP_DESCRIPTION', 'PROP_DISC_NUMBER', 
-'PROP_DURATION', 'PROP_ENTRY_ID', 'PROP_FILE_SIZE', 'PROP_FIRST_SEEN', 
+'PROP_DURATION', 
+'PROP_ENTRY_ID', 'PROP_FILE_SIZE', 'PROP_FIRST_SEEN', 
 'PROP_FIRST_SEEN_STR', 'PROP_GENRE', 'PROP_GENRE_FOLDED', 'PROP_GENRE_SORT_KEY', 
 'PROP_HIDDEN', 'PROP_IMAGE', 'PROP_KEYWORD', 'PROP_LANG', 'PROP_LAST_PLAYED', 
 'PROP_LAST_PLAYED_STR', 'PROP_LAST_SEEN', 'PROP_LAST_SEEN_STR', 'PROP_LOCATION', 

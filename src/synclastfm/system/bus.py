@@ -56,6 +56,9 @@ class Signals(gobject.GObject): #@UndefinedVariable
         ## Generated in Finder
         ,"track_entry":             (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
 
+        ## Emitted by MB Agent        
+        ,"mb_entry":                (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
     }
 
     def __init__(self):

@@ -8,8 +8,8 @@ import gobject  #@UnresolvedImport
 from synclastfm.system.bus import Bus
 from synclastfm.system.rbloader import RbLoader
 
-from synclastfm.system.sapi import Sapi
-import synclastfm.system.rapi as rapi
+from synclastfm.sapi import Sapi
+import synclastfm.rapi as rapi
 
 __all__ = []
 

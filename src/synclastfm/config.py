@@ -13,7 +13,7 @@
 import gtk      #@UnresolvedImport
 import gobject  #@UnresolvedImport
 
-from bus import Bus
+from system.bus import Bus
 
 class ConfigDialog(gobject.GObject): #@UndefinedVariable
     
@@ -34,8 +34,9 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         
         self.builder.connect_signals(self.dialog, self.dialog)
         
-        Bus.add_emission_hook("lastfm_username_changed", self.on_username_changed)
-        Bus.add_emission_hook("lastfm_proxy_detected",   self.on_lastfm_proxy_detected)
+        Bus.add_emission_hook("lastfm_username_changed",    self.on_username_changed)
+        Bus.add_emission_hook("lastfm_proxy_detected",      self.on_lastfm_proxy_detected)
+        Bus.add_emission_hook("musicbrainz_proxy_detected", self.on_musicbrainz_proxy_detected)
 
     def _dowiring(self):
         """
@@ -69,6 +70,11 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         if dialog._testing:
             gtk.main_quit()
     
+    def on_musicbrainz_proxy_detected(self, _state, data=None):
+        t=self.builder.get_object("musicbrainz_proxy_detected_button")
+        active=data==True or data=="1" or data=="True"
+        t.set_active(active)
+        
 
     def on_lastfm_proxy_detected(self, _state, data=None):
         """
@@ -78,25 +84,3 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         t.set_active(active)
         
 
-## ==================================================== Tests
-
-if __name__=="__main__":
-    import user
-    u=user.LastFmUser()
-    
-    
-    window = ConfigDialog("config.glade", testing=True)
-    d=window.get_dialog()
-    #print dir(d)
-    #print d.__class__
-    #print d._testing
-    b=d._builder
-    t=b.get_object("lastfm_username_entry")
-    #print dir(t)
-    t.set_text("test!")
-    #usernameObject=window.get_object("lastfm_username_entry")
-    
-    u.refresh()
-    #u.emit("lastfm_username_changed", "jldupont")
-    
-    gtk.main()
