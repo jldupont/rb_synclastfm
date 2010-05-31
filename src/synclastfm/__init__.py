@@ -27,18 +27,20 @@ DBusGMainLoop(set_as_default=True)
 
 import rhythmdb, rb #@UnresolvedImport
 
-from bus import Bus
-from helpers import EntryHelper, WrapperGObject
+from system.bus import Bus
+from system.helpers import EntryHelper, WrapperGObject
 
-import lastfm
-from updater import upd
+import agents.lastfm
+import agents.updater
 
-from user import lfmuser
+from agents.user import lfmuser
 from config import ConfigDialog
 from track import Track
-import lastfmsqlite
-import state
-import finder
+
+import agents.lastfm_proxy
+import agents.state
+import agents.finder
+import agents.mb
 
 
 PLUGIN_NAME="synclastfm"
@@ -141,8 +143,8 @@ dir(rhythmdb):
 'QUERY_PROP_YEAR_LESS', 'QUERY_SUBQUERY', 
 
 'Query', 'QueryModel', 'QueryModelLimitType', 'QueryResults', 'QueryType', 'RhythmDB', 
-'StringValueMap', '__doc__', '__name__', '__package__', '__version__', '
-rhythmdb_compute_status_normal', 'rhythmdb_query_model_album_sort_func', 
+'StringValueMap', '__doc__', '__name__', '__package__', '__version__', 
+'rhythmdb_compute_status_normal', 'rhythmdb_query_model_album_sort_func', 
 'rhythmdb_query_model_artist_sort_func', 'rhythmdb_query_model_date_sort_func', 
 'rhythmdb_query_model_double_ceiling_sort_func', 'rhythmdb_query_model_genre_sort_func', 
 'rhythmdb_query_model_location_sort_func', 'rhythmdb_query_model_string_sort_func', 

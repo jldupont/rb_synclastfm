@@ -3,7 +3,7 @@
     @author: jldupont
 """
 
-import gobject #@UnresolvedImport
+import gobject
 
 class Track(gobject.GObject): #@UndefinedVariable
     """

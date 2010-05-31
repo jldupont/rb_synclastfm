@@ -35,7 +35,7 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         self.builder.connect_signals(self.dialog, self.dialog)
         
         Bus.add_emission_hook("lastfm_username_changed", self.on_username_changed)
-        Bus.add_emission_hook("lastfmsqlite_detected",   self.on_lastfmsqlite_detected)
+        Bus.add_emission_hook("lastfm_proxy_detected",   self.on_lastfm_proxy_detected)
 
     def _dowiring(self):
         """
@@ -70,10 +70,10 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
             gtk.main_quit()
     
 
-    def on_lastfmsqlite_detected(self, _state, data=None):
+    def on_lastfm_proxy_detected(self, _state, data=None):
         """
         """
-        t=self.builder.get_object("lastfmsqlite_detected_button")
+        t=self.builder.get_object("lastfm_proxy_detected_button")
         active=data==True or data=="1" or data=="True"
         t.set_active(active)
         
