@@ -75,7 +75,7 @@ class Updater(gobject.GObject): #@UndefinedVariable
         """
         
         
-        try:    rbid=int(mbe.rbid)
+        try:    rbid=long(mbe.rbid)
         except: 
             print "mb.on_mb_entry: rbid is not an integer!"
             return True
@@ -84,7 +84,7 @@ class Updater(gobject.GObject): #@UndefinedVariable
         
         try:
             print "mb.on_mb_entry.1"
-            s1=(rhythmdb.QUERY_PROP_EQUALS, rhythmdb.PROP_ENTRY_ID, long(rbid))
+            s1=(rhythmdb.QUERY_PROP_EQUALS, rhythmdb.PROP_ENTRY_ID, rbid)
             print "mb.on_mb_entry.2"
             query = self._db.query_new()
             print "mb.on_mb_entry.3"
