@@ -12,10 +12,10 @@ class EntryHelper(object):
     """
     Helper functions for song database entries
     """
-    props = {   "artist":      rhythmdb.PROP_ARTIST
-                ,"album":      rhythmdb.PROP_ALBUM
+    props = {   "artist_name": rhythmdb.PROP_ARTIST
+                ,"album_name": rhythmdb.PROP_ALBUM
                 ,"duration":   rhythmdb.PROP_DURATION
-                ,"track":      rhythmdb.PROP_TITLE
+                ,"track_name": rhythmdb.PROP_TITLE
                 ,"track_mbid": rhythmdb.PROP_MUSICBRAINZ_TRACKID
                 ,"duration":   rhythmdb.PROP_DURATION
                 ,"playcount":  rhythmdb.PROP_PLAY_COUNT

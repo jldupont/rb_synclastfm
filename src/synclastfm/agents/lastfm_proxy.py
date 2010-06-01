@@ -5,7 +5,7 @@
     - "last_ts"
     
     Emits:
-    - "entry"
+    - "track" (with 'lfid' field)
     - "q_last_ts"
     - "lastfm_proxy_detected"
     
@@ -18,7 +18,7 @@ import dbus.service
 
 import gobject
 from synclastfm.system.bus import Bus
-
+from synclastfm.track import Track
 
 class Records(gobject.GObject):        #@UndefinedVariable
     """
@@ -29,21 +29,7 @@ class Records(gobject.GObject):        #@UndefinedVariable
         self.obj=source_obj
 
         
-class TrackEntry(gobject.GObject):     #@UndefinedVariable
-    def __init__(self):
-        gobject.GObject.__init__(self) #@UndefinedVariable
-        self.props={}
-        
-    def __setitem__(self, key, value):
-        self.props[key]=value
-        
-    def __getitem__(self, key):
-        return self.props.get(key, None)
-    
-    def keys(self):
-        return self.props.keys()
-
-    
+   
 
 class DbusInterface(dbus.service.Object):
     """
@@ -63,15 +49,31 @@ class DbusInterface(dbus.service.Object):
     def sRecords(self, records):
         """
         Signal Receptor - Records
+        
+        Fields in each 'record':
+         - "id"         --> lfid
+         - "created"
+         - "updated"
+         - "playcount"
+         - "track_name"
+         - "track_mbid"
+         - "artist_name"
+         - "artist_mbid"
+         - "album_name"
+         - "album_mbid"      
         """
         for record in records:
-            entry=TrackEntry()
+            entry={}
 
             keys=record.keys()
             for key in keys:
-                entry[str(key)]=record[str(key)]
+                if key=="id":
+                    entry["lfid"]=record[str(key)]
+                else:
+                    entry[str(key)]=record[str(key)]
 
-            Bus.emit("entry", entry)
+            track=Track(entry)
+            Bus.emit("track", track)
             
         Bus.emit("lastfm_proxy_detected", True)
         
@@ -121,10 +123,12 @@ class LastfmProxy(gobject.GObject): #@UndefinedVariable
         """
         Receive the "last_ts" message
         and asks for a "range" of records over DBus
-        to LastfmSqlite
+        to Lastfm Proxy DBus
         """
+        #print "last_ts: %s" % ts
         self.dbusif.qRecords(ts, self.FETCH_LIMIT)
-                
+        return True
+            
         
     def on_playing_song_changed(self, *_):
         """
@@ -133,6 +137,7 @@ class LastfmProxy(gobject.GObject): #@UndefinedVariable
         with LastfmSqlite
         """
         Bus.emit("q_last_ts")
+        return True
 
         
         
@@ -140,7 +145,7 @@ class LastfmProxy(gobject.GObject): #@UndefinedVariable
         """
         """
         Bus.emit("q_last_ts")
-
+        return True
 
 gobject.type_register(LastfmProxy) #@UndefinedVariable
 _=LastfmProxy(dbusif)

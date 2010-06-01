@@ -10,8 +10,8 @@
     @author: jldupont
     @date: May 27, 2010
 """
-import gconf    #@UnresolvedImport
-import gobject  #@UnresolvedImport
+import gconf
+import gobject
 
 ## locals
 from synclastfm.system.bus import Bus
@@ -38,6 +38,7 @@ class StateAgent(gobject.GObject):  #@UndefinedVariable
             self.last_ts=0
             
         Bus.emit("last_ts", self.last_ts)
+        return True
         
 
 _=StateAgent()

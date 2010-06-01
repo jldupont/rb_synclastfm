@@ -10,13 +10,22 @@
     
     MESSAGES IN:
     - "rb_shell"
+    - "track?"
+    - "track"   (mainly from lastfm_proxy)
     
     
     MESSAGES OUT:
     - "musicbrainz_proxy_detected"
-    - "mb_entry"
+    - "mb_track"
     
-
+    Fields returned by Musicbrainz Proxy:
+     - "artist_name"
+     - "track_name"
+     - "artist_mbid"
+     - "track_mbid"
+     - "mb_artist_name"
+     - "mb_track_name"
+    
     @author: jldupont
     @date: May 31, 2010
 """
@@ -25,6 +34,7 @@ import dbus.service
 
 
 from synclastfm.system.bus import Bus
+from synclastfm.track import Track
 
 class MBEntry(gobject.GObject): #@UndefinedVariable
     def __init__(self, source, rbid, details):
@@ -49,22 +59,39 @@ class DbusInterface(dbus.service.Object):
         Signal Emitter - qTrack
         """
 
-    def sTrack(self, source, ref, track_details):
+    def sTrack(self, _source, ref, track_details):
         """
         Signal Receptor - Track
         """
-        print "mb.sTrack: source(%s), ref(%s)" % (source, ref)
+        #print "sTrack: source(%s), ref(%s)" % (_source, ref)
         
         ## Make sure it is a signal that answers a question we asked
         ##  in the first place
-        try:
-            rb_id_str, rb_entryid =ref.split(":")
-            if rb_id_str != "rbid":
-                return
-        except:
-            return
+        try:    rb_id_str, rb_entryid =ref.split(":")
+        except: 
+            rb_id_str=  None
+            rb_entryid= None
 
-        Bus.emit("mb_entry", MBEntry(source, rb_entryid, track_details))
+        try:    lf_id_str, lf_entryid =ref.split(":")
+        except:
+            lf_id_str = None 
+            lf_entryid= None
+
+        if lf_entryid is None and rb_entryid is None:
+            return
+        
+        track=Track(track_details)
+        
+        if rb_id_str == "rbid":
+            track.details["rbid"] = rb_entryid
+
+        if lf_id_str == "lfid":
+            track.details["lfid"] = lf_entryid
+
+
+        #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
+                
+        Bus.emit("mb_track", track)
             
         Bus.emit("musicbrainz_proxy_detected", True)
         
@@ -85,34 +112,80 @@ class MBAgent(gobject.GObject):  #@UndefinedVariable
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.dbusif=dbusif
 
-        #Bus.add_emission_hook("entry",    self.h_entry)
         #Bus.add_emission_hook("rb_shell", self.on_rb_shell)
-
+        Bus.add_emission_hook("track?",                  self.hq_track)
+        Bus.add_emission_hook("track",                   self.h_track)
         Bus.add_emission_hook("playing_song_changed",    self.on_playing_song_changed)
-        
+
     def on_playing_song_changed(self, _, track):
         """
-        Trigger for updating some database tracks
+        Event from RB
         """
-        #print "mb.on_playing_song_changed: track: %s " % track
-        try: 
-            track_name= track.details["track"]
-            artist_name=track.details["artist"]
+        self._loopkup(track)
+        return True
+       
+    def h_track(self, _, track):
+        """
+        if 'track_mbid' is already set, don't lookup with proxy.
+        
+        If 'track_mbid' isn't set, the message probably comes
+        from 'lastfm_proxy agent' and thus a lookup should
+        be performed.
+        """
+        try:    
             track_mbid= track.details["track_mbid"]
-            rbid=track.details["rbid"]
+            if track_mbid is None:
+                track_mbid= ""
+        except: track_mbid= ""
+            
+        if len(track_mbid) < 36:
+            self._loopkup(track)
+
+        return True
+        
+                
+    def hq_track(self, _, track):
+        """
+        See if we need to lookup the track's mbid
+        """
+        try:    track_mbid= track.details["track_mbid"]
+        except: track_mbid= ""
+            
+        if len(track_mbid) < 36:
+            self._loopkup(track)
+            
+        return True
+        
+    def _loopkup(self, track):
+        """
+        """
+        #print "_lookup: track: %s " % track
+        try:    reqid="rbid:%s" % track.details["rbid"]
+        except:
+            try:
+                reqid="lfid:%s" % track.details["lfid"]
+            except:
+                print "invalid id! Expecting 'rbid' or 'lfid'"
+                return
+        
+        try: 
+            track_name= track.details["track_name"]
+            artist_name=track.details["artist_name"]
+            track_mbid= track.details["track_mbid"]
         except Exception, e:
-            print "mb.on_playing_song_changed: error retrieving track info: %s " % e
+            print "error retrieving track info: %s " % e
             return True
         
         try:    l=len(str(track_mbid))
         except: l=0
 
-        if l != 0:
-            print "mb.on_playing_song_changed: track_mbid already present: %s, %s" % (artist_name, track_name)
+        ## to account for the mess I might have put the database into...
+        if l == 36:
+            print "track_mbid already present: %s, %s" % (artist_name, track_name)
             return True
         
-        ref="rbid:%s" % rbid
-        self.dbusif.qTrack(ref, artist_name, track_name)
+        ### Ask Musicbrainz Proxy for some more info
+        self.dbusif.qTrack(reqid, artist_name, track_name)
         
         return True
         

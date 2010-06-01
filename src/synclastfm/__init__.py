@@ -37,10 +37,11 @@ from agents.user import lfmuser
 from config import ConfigDialog
 from track import Track
 
-#import agents.lastfm_proxy
+import agents.lastfm_proxy
 import agents.state
-import agents.finder
+#import agents.finder
 import agents.mb
+import agents.metadb
 
 
 PLUGIN_NAME="synclastfm"
@@ -106,7 +107,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
         details=EntryHelper.track_details(self.shell, entry)
         if details:
             track=Track(details=details, entry=self.current_entry)
-            Bus.emit("playing_song_changed", track)
+            Bus.emit("track?", track)
 
 
 

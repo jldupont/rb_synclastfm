@@ -44,7 +44,7 @@ class Signals(gobject.GObject): #@UndefinedVariable
         ,"last_ts":                 (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_UINT,))  #@UndefinedVariable
         
         ## An Entry being worked on
-        ,"entry":                   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+        ,"lastfm_entry":            (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
 
         ## An Entry which has been updated
         ,"entry_updated":           (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
@@ -56,8 +56,14 @@ class Signals(gobject.GObject): #@UndefinedVariable
         ## Generated in Finder
         ,"track_entry":             (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
 
-        ## Emitted by MB Agent        
-        ,"mb_entry":                (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+        ## Emitted/processed by most agents        
+        ,"track":                   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
+        ## Emitted/processed by most agents        
+        ,"mb_track":                 (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+        
+        ## Emitted/processed by most agents        
+        ,"track?":                  (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
 
     }
 
