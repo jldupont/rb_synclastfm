@@ -30,7 +30,7 @@ class MBEntry(gobject.GObject): #@UndefinedVariable
     def __init__(self, source, rbid, details):
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.source=str(source)
-        self.rbid=str(rbid)
+        self.rbid=int(rbid)
         self.details=details
         
 
