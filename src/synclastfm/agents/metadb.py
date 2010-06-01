@@ -14,6 +14,7 @@ import time
 
 ## locals
 from synclastfm.system.bus import Bus
+from synclastfm.track import Track
 
 
 FIELDS=["id", "created", "updated", 
@@ -31,6 +32,21 @@ def makeTrackDict(track_tuple):
         index += 1
     return dic
 
+
+def mergeTrackObjects(s1, s2):
+    """
+    Merge the information from s1
+    with s2 whilst keeping 's1' fields in priority
+    """
+    result={}
+    
+    if s2 is not None:
+        result.update(s2)
+    if s1 is not None:
+        result.update(s1)
+    return result
+    
+    
 
 class MetaDBAgent(gobject.GObject):  #@UndefinedVariable
 
@@ -50,7 +66,51 @@ class MetaDBAgent(gobject.GObject):  #@UndefinedVariable
                             artist_name text)
                         """)
 
+        Bus.add_emission_hook("track",    self.h_track)
         Bus.add_emission_hook("mb_track", self.h_mb_track)
+
+    def h_track(self, _, track):
+        """
+        Based on on 'track' object, we need to find all
+        'meta_tracks' entries in the database.  We do
+        this by looking up the 'track' in the database
+        in order to retrieve the the 'track_mbid'. With this
+        information, we can now fetch all the 'meta tracks'
+        that have the same 'track_mbid'.
+        
+        Be sure to 'merge' the fields from the original 'track'
+        object when issuing the resulting 'meta_track' message.
+        """
+        artist_name=track.details["artist_name"]
+        track_name =track.details["track_name"]
+        otrack=self._findTrack(artist_name, track_name)
+        
+        ## Did we find a record at all?
+        if len(otrack) == 0:
+            return True
+        
+        track_mbid=otrack.get("track_mbid", "")
+        
+        ## We can't go very far if we don't have a 'pivot'
+        ##  track_mbid to work with...
+        if track_mbid == "":
+            return True
+        
+        mtracks=self._findWithTrackMbid(track_mbid)
+        if mtracks is None:
+            return True
+        
+        for mtrack_tuple in mtracks:
+            rtrack=makeTrackDict(mtrack_tuple)
+            r2track=mergeTrackObjects(track.details, rtrack)
+            
+            ## pain... need to convert to be compatible with gobject...
+            ## I wish I would have bypassed gobject at the beginning...
+            gtrack=Track(r2track, lastfm_info=track.lastfm_info)
+            Bus.emit("meta_track", gtrack)
+        
+        return True
+        
 
     def h_mb_track(self, _, track):
         """
@@ -145,13 +205,12 @@ class MetaDBAgent(gobject.GObject):  #@UndefinedVariable
         """
         try:
             self.c.execute("""SELECT * FROM tracks WHERE track_mbid=?""", 
-                           (track_mbid))
-            track_tuple=self.c.fetchone()
+                           (track_mbid,))
+            track_tuples=self.c.fetchall()
         except:
-            track_tuple=None
+            track_tuples=None
             
-        track=makeTrackDict(track_tuple)
-        return track
+        return track_tuples
         
         
 

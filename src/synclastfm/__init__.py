@@ -39,7 +39,7 @@ from track import Track
 
 import agents.lastfm_proxy
 import agents.state
-#import agents.finder
+import agents.finder
 import agents.mb
 import agents.metadb
 

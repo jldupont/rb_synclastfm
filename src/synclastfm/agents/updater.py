@@ -54,13 +54,19 @@ class Updater(gobject.GObject): #@UndefinedVariable
         te=trackWrapper.track_entry
         dbe=trackWrapper.db_entry
         
+        #print "te.details: %s" % te.details
+        
         ## If Finder didn't find an entry in the database,
         ## we can't do much at this point
         if dbe is None:
             return True
         
+        try: playcount=te.details["playcount"]
+        except:
+            print "** Playcount not found"
+            return True
+        
         try:
-            playcount=te["playcount"]
             self._db.set(dbe, rhythmdb.PROP_PLAY_COUNT, playcount)
             self._db.commit()
         except:

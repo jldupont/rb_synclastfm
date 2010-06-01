@@ -30,7 +30,7 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.db=None
 
-        Bus.add_emission_hook("lastfm_entry", self.h_lastfm_entry)
+        Bus.add_emission_hook("meta_track",   self.h_meta_track)
         Bus.add_emission_hook("rb_shell",     self.on_rb_shell)
 
     def on_rb_shell(self, _signal, rbobjects):
@@ -44,13 +44,15 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
         return True        
     
 
-    def h_lastfm_entry(self, _, entry):
+    def h_meta_track(self, _, track):
         """
         Intercepts an "entry" and attempts to
         locate a corresponding "db entry"
         """
-        artist_name=str(entry["artist_name"])
-        track_name=str(entry["track_name"])
+        artist_name= str(track.details["artist_name"])
+        track_name = str(track.details["track_name"])
+        
+        #print "meta_track: %s" % track
         
         s1=(rhythmdb.QUERY_PROP_LIKE, rhythmdb.PROP_ARTIST, artist_name)
         s2=(rhythmdb.QUERY_PROP_LIKE, rhythmdb.PROP_TITLE, track_name)
@@ -66,7 +68,10 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
             print "-- FOUND: artist(%s) track(%s)" % (artist_name, track_name)            
             break  ## not elegant but it works
             
-        te=TrackEntryWrapper(entry, dbe)
+        if dbe is None:
+            print "^^ NOT FOUND: artist(%s) track(%s)" % (artist_name, track_name)
+            
+        te=TrackEntryWrapper(track, dbe)
         Bus.emit("track_entry", te)
             
         return True

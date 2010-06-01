@@ -65,6 +65,9 @@ class Signals(gobject.GObject): #@UndefinedVariable
         ## Emitted/processed by most agents        
         ,"track?":                  (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
 
+        ## Emitted/processed by most agents        
+        ,"meta_track":              (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
     }
 
     def __init__(self):
