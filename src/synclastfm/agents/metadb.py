@@ -4,6 +4,15 @@
     Responsible for storing associations of the form:
     [artist_name; track_name; track_mbid]
     
+    MESSAGES IN:
+    - "mb_track":  updates/inserts in db
+    - "track":     performs look-up and issues corresponding "meta_track" messages
+    
+    
+    MESSAGES OUT:
+    - "meta_track"
+    
+    
     @author: jldupont
     @date: Jun 1, 2010
 """
@@ -96,13 +105,17 @@ class MetaDBAgent(gobject.GObject):  #@UndefinedVariable
         if track_mbid == "":
             return True
         
+        ## Try and find corresponding 'meta_track' information
+        ##  based on the source 'track_mbid'.
+        ## Issue all 'meta_track' in messages as to help other
+        ##  agents (e.g. Finder).
         mtracks=self._findWithTrackMbid(track_mbid)
         if mtracks is None:
             return True
         
         for mtrack_tuple in mtracks:
             rtrack=makeTrackDict(mtrack_tuple)
-            r2track=mergeTrackObjects(track.details, rtrack)
+            r2track=mergeTrackObjects(rtrack, track.details)
             
             ## pain... need to convert to be compatible with gobject...
             ## I wish I would have bypassed gobject at the beginning...
@@ -175,9 +188,11 @@ class MetaDBAgent(gobject.GObject):  #@UndefinedVariable
             new=True
             
         if new:
-            print "inserted: artist(%s) track(%s)" % (artist_name, track_name)
+            #print "inserted: artist(%s) track(%s)" % (artist_name, track_name)
+            pass
         else:
-            print "updated: artist(%s) track(%s)" % (artist_name, track_name)
+            #print "updated: artist(%s) track(%s)" % (artist_name, track_name)
+            pass
             
         self.conn.commit()
         return new
