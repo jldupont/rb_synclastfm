@@ -41,7 +41,7 @@ import agents.lastfm_proxy
 import agents.state
 import agents.finder
 import agents.mb
-import agents.metadb
+##import agents.metadb not used since musicbrainz-proxy > v2.x
 
 
 PLUGIN_NAME="synclastfm"

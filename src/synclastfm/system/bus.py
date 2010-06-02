@@ -31,8 +31,13 @@ class Signals(gobject.GObject): #@UndefinedVariable
         ## Used to pass around "Records" from lastfm proxy dbus
         ,"records":                 (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
         
+        ,"lastfm_proxy_detected?":  (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())  #@UndefinedVariable
+        
         ## Used to signal the detection of Lastfm Proxy DBus
         ,"lastfm_proxy_detected":   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_BOOLEAN,))  #@UndefinedVariable
+
+        ## Used to signal the detection of Musicbrainz Proxy DBus
+        ,"musicbrainz_proxy_detected?":  (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ())  #@UndefinedVariable
 
         ## Used to signal the detection of Musicbrainz Proxy DBus
         ,"musicbrainz_proxy_detected":   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_BOOLEAN,))  #@UndefinedVariable
@@ -58,6 +63,9 @@ class Signals(gobject.GObject): #@UndefinedVariable
 
         ## Emitted/processed by most agents        
         ,"track":                   (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
+
+        ## Emitted by Updater        
+        ,"track_updated":            (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable
 
         ## Emitted/processed by most agents        
         ,"mb_track":                 (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_OBJECT,))  #@UndefinedVariable

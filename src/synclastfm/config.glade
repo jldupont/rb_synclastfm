@@ -10,6 +10,8 @@
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <signal name="destroy" handler="on_config_dialog_destroy"/>
+    <signal name="activate_focus" handler="on_show"/>
+    <signal name="activate_default" handler="on_show"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
@@ -161,6 +163,7 @@
                     <child>
                       <object class="GtkCheckButton" id="lastfm_proxy_detected_button">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
                         <property name="use_stock">True</property>
@@ -190,11 +193,11 @@
                     <child>
                       <object class="GtkCheckButton" id="musicbrainz_proxy_detected_button">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
                         <property name="use_stock">True</property>
                         <property name="focus_on_click">False</property>
-                        <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>

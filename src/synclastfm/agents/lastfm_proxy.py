@@ -68,7 +68,12 @@ class DbusInterface(dbus.service.Object):
             keys=record.keys()
             for key in keys:
                 if key=="id":
-                    entry["lfid"]=record[str(key)]
+                    ## Prepare a 'ref' field with some context:
+                    ##  This is essential for processing the response signal
+                    ##  ref:  lfid:'id':'playcount'
+                    playcount=long(record["playcount"])
+                    id=str(record["id"])
+                    entry["lfid"]="%s:%s" % (id, playcount)
                 else:
                     entry[str(key)]=record[str(key)]
 
@@ -92,7 +97,7 @@ class LastfmProxy(gobject.GObject): #@UndefinedVariable
     """
     Updates various properties
     """
-    FETCH_LIMIT=100
+    FETCH_LIMIT=10
     
     def __init__(self, dbusif):
         gobject.GObject.__init__(self) #@UndefinedVariable
@@ -101,9 +106,18 @@ class LastfmProxy(gobject.GObject): #@UndefinedVariable
         self._sp=None
         self._robjects=None
         self.dbusif=dbusif
+        self.detected=False
         
+        Bus.add_emission_hook("lastfm_proxy_detected",   self.h_lastfm_proxy_detected)
+        Bus.add_emission_hook("lastfm_proxy_detected?",  self.hq_lastfm_proxy_detected)
         Bus.add_emission_hook("rb_shell",  self.on_rb_shell)
         Bus.add_emission_hook("last_ts",   self.h_last_ts)
+        
+    def h_lastfm_proxy_detected(self, _, state):
+        self.detected=state
+        
+    def hq_lastfm_proxy_detected(self, *_):
+        Bus.emit("lastfm_proxy_detected", self.detected)
         
     def on_rb_shell(self, _signal, rbobjects):
         """

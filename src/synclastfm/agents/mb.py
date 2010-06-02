@@ -59,47 +59,50 @@ class DbusInterface(dbus.service.Object):
         Signal Emitter - qTrack
         """
 
-    def sTrack(self, _source, ref, track_details):
+    def sTracks(self, _source, ref, tracks):
         """
         Signal Receptor - Track
         """
-        #print "sTrack: source(%s), ref(%s)" % (_source, ref)
+        #print "sTrack: source(%s), ref(%s)" % (source, ref)
         
         ## Make sure it is a signal that answers a question we asked
         ##  in the first place
-        try:    rb_id_str, rb_entryid =ref.split(":")
-        except: 
-            rb_id_str=  None
-            rb_entryid= None
-
-        try:    lf_id_str, lf_entryid =ref.split(":")
-        except:
-            lf_id_str = None 
-            lf_entryid= None
-
-        if lf_entryid is None and rb_entryid is None:
+        try:    pieces=ref.split(":")
+        except: pieces=None
+        
+        ## most probably not ours.
+        if pieces is None:
             return
         
-        track=Track(track_details)
+        try:    idstr=str(pieces[0])
+        except: idstr=None
+
+        try:    id=long(pieces[1])
+        except: id=None
+               
+        ## Yep, not ours.
+        if idstr!="rbid" and idstr!="lfid":
+            return
         
-        if rb_id_str == "rbid":
-            track.details["rbid"] = rb_entryid
-
-        if lf_id_str == "lfid":
-            track.details["lfid"] = lf_entryid
-
-
-        #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
-                
-        Bus.emit("mb_track", track)
+        if id is None:
+            return
+        
+        ## Don't forget to add the 'ref' field back!
+        for track_details in tracks:
+            track=Track(track_details)
+            track.details[idstr]=ref
+            
+            #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
+                    
+            Bus.emit("mb_track", track)
             
         Bus.emit("musicbrainz_proxy_detected", True)
         
         
 
 dbusif=DbusInterface()
-dbus.Bus().add_signal_receiver(dbusif.sTrack, 
-                               signal_name="Track", 
+dbus.Bus().add_signal_receiver(dbusif.sTracks, 
+                               signal_name="Tracks", 
                                dbus_interface="com.jldupont.musicbrainz.proxy", 
                                bus_name=None, 
                                path="/Tracks")
@@ -111,11 +114,21 @@ class MBAgent(gobject.GObject):  #@UndefinedVariable
     def __init__(self, dbusif): 
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.dbusif=dbusif
-
+        self.detected=False
+        
         #Bus.add_emission_hook("rb_shell", self.on_rb_shell)
         Bus.add_emission_hook("track?",                  self.hq_track)
         Bus.add_emission_hook("track",                   self.h_track)
         Bus.add_emission_hook("playing_song_changed",    self.on_playing_song_changed)
+        Bus.add_emission_hook("musicbrainz_proxy_detected", self.h_musicbrainz_proxy_detected)
+        Bus.add_emission_hook("musicbrainz_proxy_detected?", self.hq_musicbrainz_proxy_detected)
+        
+
+    def h_musicbrainz_proxy_detected(self, _, state):
+        self.detected=state
+
+    def hq_musicbrainz_proxy_detected(self, *_):
+        Bus.emit("musicbrainz_proxy_detected",self.detected)
 
     def on_playing_song_changed(self, _, track):
         """

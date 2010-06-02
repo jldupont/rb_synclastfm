@@ -31,7 +31,7 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.db=None
 
-        Bus.add_emission_hook("meta_track",   self.h_meta_track)
+        Bus.add_emission_hook("mb_track",     self.h_mb_track)
         Bus.add_emission_hook("rb_shell",     self.on_rb_shell)
 
     def on_rb_shell(self, _signal, rbobjects):
@@ -45,9 +45,9 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
         return True        
     
 
-    def h_meta_track(self, _, track):
+    def h_mb_track(self, _, track):
         """
-        For each 'meta_track' received, try to find a corresponding
+        For each 'mb_track' received, try to find a corresponding
         rb db entry and issue a "track_entry" message.
         
         This should help 'Updater' to do its job.

@@ -10,8 +10,8 @@
 
 """
 
-import gtk      #@UnresolvedImport
-import gobject  #@UnresolvedImport
+import gtk
+import gobject
 
 from system.bus import Bus
 
@@ -38,6 +38,9 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         Bus.add_emission_hook("lastfm_proxy_detected",      self.on_lastfm_proxy_detected)
         Bus.add_emission_hook("musicbrainz_proxy_detected", self.on_musicbrainz_proxy_detected)
 
+        self.mb_proxy_detected=False
+        self.lb_proxy_detected=False
+
     def _dowiring(self):
         """
         Wires the GTK dialog to the signal handlers
@@ -60,6 +63,13 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         t.set_text(data)
         return True
 
+    def on_show(self, *_):
+        print "on_show"
+        Bus.emit("lastfm_proxy_detected?")
+        Bus.emit("musicbrainz_proxy_detected?")
+        self._upLfProxy()
+        self._upMbProxy()
+
     def on_close_clicked(_el, dialog): #@NoSelf
         dialog.hide()
         if dialog._testing:
@@ -71,16 +81,29 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
             gtk.main_quit()
     
     def on_musicbrainz_proxy_detected(self, _state, data=None):
-        t=self.builder.get_object("musicbrainz_proxy_detected_button")
-        active=data==True or data=="1" or data=="True"
-        t.set_active(active)
+        print "on_musicbrainz_proxy_detected: data: %s" % data
         
+        active=data==True or data=="1" or data=="True"
+        self.mb_proxy_detected=active
+        self._upMbProxy()
+        
+    def _upMbProxy(self):
+        t=self.builder.get_object("musicbrainz_proxy_detected_button")
+        t.set_sensitive(True)
+        t.set_active(self.mb_proxy_detected)
+        t.set_sensitive(False)
 
     def on_lastfm_proxy_detected(self, _state, data=None):
-        """
-        """
-        t=self.builder.get_object("lastfm_proxy_detected_button")
+        print "on_lastfm_proxy_detected: data: %s" % data
+        
         active=data==True or data=="1" or data=="True"
-        t.set_active(active)
+        self.lb_proxy_detected=active
+        self._upLfProxy()
+        
+    def _upLfProxy(self):
+        t=self.builder.get_object("lastfm_proxy_detected_button")
+        t.set_sensitive(True)
+        t.set_active(self.lb_proxy_detected)
+        t.set_sensitive(False)
         
 
