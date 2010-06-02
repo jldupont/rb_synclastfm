@@ -35,6 +35,8 @@ import dbus.service
 
 from synclastfm.system.bus import Bus
 from synclastfm.track import Track
+from synclastfm.system.dtype import SimpleStore
+
 
 class MBEntry(gobject.GObject): #@UndefinedVariable
     def __init__(self, source, rbid, details):
@@ -49,9 +51,12 @@ class DbusInterface(dbus.service.Object):
     DBus interface - listening for signals from Musicbrainz Proxy DBus
     """
     PATH="/Tracks"
+    CACHE_ENTRIES=256
+    
     
     def __init__(self):
         dbus.service.Object.__init__(self, dbus.SessionBus(), self.PATH)
+        #self.ss=SimpleStore(self.CACHE_ENTRIES)
 
     @dbus.service.signal(dbus_interface="com.jldupont.musicbrainz.proxy", signature="vvv")
     def qTrack(self, ref, artist_name, track_name):
@@ -62,6 +67,9 @@ class DbusInterface(dbus.service.Object):
     def sTracks(self, _source, ref, tracks):
         """
         Signal Receptor - Track
+        
+        Verify the "ref" parameter to make sure it is
+        in reponse to a 'question' we asked
         """
         #print "sTrack: source(%s), ref(%s)" % (source, ref)
         
@@ -81,7 +89,7 @@ class DbusInterface(dbus.service.Object):
         except: id=None
                
         ## Yep, not ours.
-        if idstr!="rbid" and idstr!="lfid":
+        if idstr!="rb":
             return
         
         if id is None:
@@ -161,7 +169,7 @@ class MBAgent(gobject.GObject):  #@UndefinedVariable
         """
         See if we need to lookup the track's mbid
         """
-        try:    track_mbid= track.details["track_mbid"]
+        try:    track_mbid= str( track.details["track_mbid"] )
         except: track_mbid= ""
             
         if len(track_mbid) < 36:
@@ -171,6 +179,9 @@ class MBAgent(gobject.GObject):  #@UndefinedVariable
         
     def _loopkup(self, track):
         """
+        Sends the signal 'qTrack' over DBus to Musicbrainz-Proxy
+        
+        
         """
         #print "_lookup: track: %s " % track
         try:    reqid="rbid:%s" % track.details["rbid"]

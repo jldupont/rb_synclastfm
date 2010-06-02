@@ -97,7 +97,7 @@ class LastfmProxy(gobject.GObject): #@UndefinedVariable
     """
     Updates various properties
     """
-    FETCH_LIMIT=10
+    FETCH_LIMIT=2
     
     def __init__(self, dbusif):
         gobject.GObject.__init__(self) #@UndefinedVariable

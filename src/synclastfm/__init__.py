@@ -21,7 +21,12 @@
       - Wrong/insufficient detail locally
     
 """
+import gobject
+import dbus.glib
 from dbus.mainloop.glib import DBusGMainLoop
+
+gobject.threads_init()  #@UndefinedVariable
+dbus.glib.init_threads()
 DBusGMainLoop(set_as_default=True)
 
 

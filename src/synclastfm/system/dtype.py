@@ -6,6 +6,8 @@
 """
 import uuid
 
+__all__=["BoundedDict", "SimpleStore"]
+
 class BoundedDict(object):
     """
     >>> bd=BoundedDict(2)
