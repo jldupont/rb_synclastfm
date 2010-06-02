@@ -1,8 +1,10 @@
 """
     Custom Data Types
+    
     @author: jldupont
     @date: Jun 1, 2010
 """
+import uuid
 
 class BoundedDict(object):
     """
@@ -74,6 +76,39 @@ class BoundedDict(object):
         ## shouldn't occur... paranoia
         try:    del self.dic[key]
         except: pass
+    
+
+class SimpleStore(object):
+    """
+    >>> ss=SimpleStore(2)
+    >>> key=ss.store("zelement")
+    >>> print ss.retrieve(key)
+    zelement
+    >>> print ss.retrieve(key)         # doctest:+ELLIPSIS
+    Traceback (most recent call last):
+        ...
+    KeyError: ...
+    """
+    def __init__(self, size=10):
+        self.bd=BoundedDict(size)
+        
+    def store(self, element):
+        """
+        Store an 'element' with a unique key
+        
+        @return ukey: unique key
+        """
+        ukey=str(uuid.uuid4())
+        self.bd[ukey]=element
+        return ukey
+    
+    def retrieve(self, key):
+        """
+        Retrieves an 'element'
+        
+        Raises 'KeyError' exception if not found
+        """
+        return self.bd[key]
     
         
 if __name__=="__main__":
