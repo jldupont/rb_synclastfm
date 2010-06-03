@@ -68,12 +68,12 @@ class BasicSwitch(Thread):
 ## =============================================================== 
         
 
-def publish(orig, msgType, msg=None, *pargs, **kargs):
+def publish(orig, msgType, *pargs):
     """
     Publish a 'message' of type 'msgType' to
     all registered 'clients'
     """
-    _switch.iq.put((msgType, (orig, msg, pargs, kargs)))
+    _switch.iq.put((msgType, (orig, pargs)))
     
     
 def subscribe(q):

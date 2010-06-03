@@ -38,6 +38,7 @@ from helpers import EntryHelper
 from config import ConfigDialog
 from track import Track
 
+import agents.bridge
 import agents.user
 import agents.lastfm
 import agents.updater
@@ -71,8 +72,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
                                self.playing_song_changed),
                    )
         ## Distribute the vital RB objects around
-        rbobjects=(self.shell,db, self.shell.get_player())
-        Bus.publish(self, "rb_shell", rbobjects)
+        Bus.publish(self, "rb_shell", shell, db, sp)
         
     def deactivate (self, shell):
         self.shell = None
@@ -112,6 +112,17 @@ class SyncLastFMDKPlugin (rb.Plugin):
             track=Track(details=details, entry=self.current_entry)
             Bus.publish(self, "track?", track)
 
+
+count=0
+def gen_tick():
+    global count
+    Bus.publish("__gen_tick__", "tick", count)
+    #print "tick: count(%s)" % count
+    count += 1
+    return True
+
+TICK_FREQ=4
+gobject.timeout_add(1000/TICK_FREQ, gen_tick)  #@UndefinedVariable
 
 
 """

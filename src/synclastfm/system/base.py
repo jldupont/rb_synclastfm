@@ -22,7 +22,7 @@ def mdispatch(obj, obj_orig, envelope):
     handler inside a class instance
     """
     mtype, payload = envelope
-    orig, msg, pargs, kargs = payload
+    orig, pargs    = payload
     
     ## Avoid sending to self
     if orig == obj_orig:
@@ -40,10 +40,10 @@ def mdispatch(obj, obj_orig, envelope):
     if handler is None:
         handler=getattr(obj, "h_default", None)    
         if handler is not None:
-            handler(mtype, msg, *pargs, **kargs)
+            handler(mtype, *pargs)
     else:
         try:
-            handler(msg, *pargs, **kargs)
+            handler(*pargs)
         except TypeError, e:
             raise RuntimeError("Invalid handler for mtype(%s) in obj(%s): %s" % (mtype, str(obj), e))
 
@@ -63,8 +63,8 @@ class AgentThreadedBase(Thread):
         self.id = uuid.uuid1()
         self.iq = Queue()
         
-    def pub(self, msgType, msg, *pargs, **kargs):
-        mswitch.publish(self.id, msgType, msg, *pargs, **kargs)
+    def pub(self, msgType, *pargs):
+        mswitch.publish(self.id, msgType, *pargs)
         
     def run(self):
         """

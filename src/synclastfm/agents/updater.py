@@ -38,13 +38,14 @@ class Updater(object): #@UndefinedVariable
         Bus.subscribe("user_track_info", self.on_user_track_info)
         Bus.subscribe("rb_shell",        self.on_rb_shell)
         
-    def on_rb_shell(self, rbobjects):
+    def on_rb_shell(self, shell, db, _sp):
         """
         Grab RB objects references (shell, db, player)
         
         GObject handler
         """
-        self._shell, self._db, _ = rbobjects
+        self._shell=shell
+        self._db=db
         
     def on_track_entry(self, trackWrapper):
         """

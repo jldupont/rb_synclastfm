@@ -2,10 +2,7 @@
     Track class
     @author: jldupont
 """
-
-import gobject
-
-class Track(gobject.GObject): #@UndefinedVariable
+class Track(object):
     """
     Last.fm Track proxy
     
@@ -24,8 +21,6 @@ class Track(gobject.GObject): #@UndefinedVariable
     "artist_mbid": artist's Musicbrainz UUID
     """
     def __init__(self, details, entry=None, lastfm_info=None):
-        gobject.GObject.__init__(self) #@UndefinedVariable
-
         self.details=details
         self.entry=entry
         self.lastfm_info=lastfm_info
