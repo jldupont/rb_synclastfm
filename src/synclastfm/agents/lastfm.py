@@ -3,9 +3,7 @@
 
     @author: jldupont
 """
-import gobject  #@UnresolvedImport
-
-from synclastfm.system.bus import Bus
+from synclastfm.system.mbus import Bus
 from synclastfm.system.rbloader import RbLoader
 
 from synclastfm.sapi import Sapi
@@ -28,11 +26,11 @@ class LastFmResponseCallback(object):
         try:
             track_info=rapi.processResponse(response)
             self.track.lastfm_info=track_info
-            Bus.emit("user_track_info", self.track)
+            Bus.publish(self, "user_track_info", self.track)
             #print ">> user_track_info: " + str(track_info)            
         except Exception,e:
             print "LastFmResponseCallback: Exception: " + str(e)
-            Bus.emit("lastfm_request_failed")
+            Bus.publish(self, "lastfm_request_failed")
         
 
 
@@ -49,32 +47,31 @@ class LastFmResponseCallbackGeneric(object):
         try:
             track_info=rapi.processResponse(response)
             self.track.lastfm_info=track_info
-            Bus.emit("track_info", self.track)
+            Bus.publish(self, "track_info", self.track)
             #print "track_info: " + str(track_info)            
         except Exception,e:
             print "LastFmResponseCallback: Exception: " + str(e)
-            Bus.emit("lastfm_request_failed")
+            Bus.publish(self, "lastfm_request_failed")
 
 
  
-class LastFmAgent(gobject.GObject):    #@UndefinedVariable
+class LastFmAgent(object):
     def __init__(self, sapi):
-        gobject.GObject.__init__(self) #@UndefinedVariable
         self._sapi = sapi
         self._lfmusername=""
         
         ##Bus.add_emission_hook("q_track_info",            self.hq_track_info)
-        Bus.add_emission_hook("track?",                  self.hq_track)
-        Bus.add_emission_hook("lastfm_username_changed", self.on_lastfm_username_changed)
+        Bus.subscribe("track?",                  self.hq_track)
+        Bus.subscribe("lastfm_username_changed", self.on_lastfm_username_changed)
         
-    def on_lastfm_username_changed(self, _signal, username):
+    def on_lastfm_username_changed(self, username):
         """
         GObject handler
         """        
         self._lfmusername=username
         return True #required for gobject
         
-    def hq_track(self, _signal, track):
+    def hq_track(self, track):
         """
         GObject handler
         
@@ -104,9 +101,6 @@ class LastFmAgent(gobject.GObject):    #@UndefinedVariable
                    username=self._lfmusername)
         
         
-
-
-gobject.type_register(LastFmAgent) #@UndefinedVariable
 
 
 ## Inits

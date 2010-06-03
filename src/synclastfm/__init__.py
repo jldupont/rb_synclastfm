@@ -32,20 +32,20 @@ DBusGMainLoop(set_as_default=True)
 
 import rhythmdb, rb #@UnresolvedImport
 
-from system.bus import Bus
-from helpers import EntryHelper, WrapperGObject
+from system.mbus import Bus
+from helpers import EntryHelper
 
-import agents.lastfm
-import agents.updater
-
-from agents.user import lfmuser
 from config import ConfigDialog
 from track import Track
 
-import agents.lastfm_proxy
-import agents.state
-import agents.finder
-import agents.mb
+import agents.user
+import agents.lastfm
+import agents.updater
+
+#import agents.lastfm_proxy
+#import agents.state
+#import agents.finder
+#import agents.mb
 ##import agents.metadb not used since musicbrainz-proxy > v2.x
 
 
@@ -71,10 +71,8 @@ class SyncLastFMDKPlugin (rb.Plugin):
                                self.playing_song_changed),
                    )
         ## Distribute the vital RB objects around
-        rbobjects=WrapperGObject(shell=self.shell, 
-                                 db=db, 
-                                 player=self.shell.get_player())
-        Bus.emit("rb_shell", rbobjects)
+        rbobjects=(self.shell,db, self.shell.get_player())
+        Bus.publish(self, "rb_shell", rbobjects)
         
     def deactivate (self, shell):
         self.shell = None
@@ -96,7 +94,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
             proxy=ConfigDialog(glade_file_path)
             dialog=proxy.get_dialog() 
         dialog.present()
-        lfmuser.refresh()
+        Bus.publish(self, "config?")
         return dialog
 
             
@@ -106,13 +104,13 @@ class SyncLastFMDKPlugin (rb.Plugin):
         """
         ## unfortunately, I don't have a better process
         ## for keeping the "user parameters" synced just yet...
-        lfmuser.refresh()
+        Bus.publish(self, "config?")
         
         self.current_entry = sp.get_playing_entry()
         details=EntryHelper.track_details(self.shell, entry)
         if details:
             track=Track(details=details, entry=self.current_entry)
-            Bus.emit("track?", track)
+            Bus.publish(self, "track?", track)
 
 
 
@@ -131,10 +129,11 @@ dir(rhythmdb):
 'PROP_DURATION', 
 'PROP_ENTRY_ID', 'PROP_FILE_SIZE', 'PROP_FIRST_SEEN', 
 'PROP_FIRST_SEEN_STR', 'PROP_GENRE', 'PROP_GENRE_FOLDED', 'PROP_GENRE_SORT_KEY', 
-'PROP_HIDDEN', 'PROP_IMAGE', 'PROP_KEYWORD', 'PROP_LANG', 'PROP_LAST_PLAYED', 
-'PROP_LAST_PLAYED_STR', 'PROP_LAST_SEEN', 'PROP_LAST_SEEN_STR', 'PROP_LOCATION', 
-'PROP_MIMETYPE', 'PROP_MOUNTPOINT', 'PROP_MTIME', 'PROP_MUSICBRAINZ_ALBUMARTISTID', 
-'PROP_MUSICBRAINZ_ALBUMID', 'PROP_MUSICBRAINZ_ARTISTID', 'PROP_MUSICBRAINZ_TRACKID', 
+'PROP_HIDDEN', 'PROP_IMAGE', 'PROP_KEYWORD', 'PROP_LANG', 
+'PROP_LAST_PLAYED', 'PROP_LAST_PLAYED_STR', 
+'PROP_LAST_SEEN', 'PROP_LAST_SEEN_STR', 
+'PROP_LOCATION', 'PROP_MIMETYPE', 'PROP_MOUNTPOINT', 'PROP_MTIME', 
+'PROP_MUSICBRAINZ_ALBUMARTISTID', 'PROP_MUSICBRAINZ_ALBUMID', 'PROP_MUSICBRAINZ_ARTISTID', 'PROP_MUSICBRAINZ_TRACKID', 
 'PROP_PLAYBACK_ERROR', 'PROP_PLAY_COUNT', 'PROP_POST_TIME', 'PROP_RATING', 
 'PROP_SEARCH_MATCH', 'PROP_STATUS', 'PROP_SUBTITLE', 'PROP_SUMMARY', 'PROP_TITLE', 
 'PROP_TITLE_FOLDED', 'PROP_TITLE_SORT_KEY', 'PROP_TRACK_GAIN', 'PROP_TRACK_NUMBER', 

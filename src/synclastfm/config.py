@@ -11,15 +11,10 @@
 """
 
 import gtk
-import gobject
 
-from system.bus import Bus
+from system.mbus import Bus
 
-class ConfigDialog(gobject.GObject): #@UndefinedVariable
-    
-    __gsignals__ = {
-        "lastfm_username_changed": (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_STRING,)) #@UndefinedVariable
-        }
+class ConfigDialog(object): #@UndefinedVariable
     
     def __init__(self, glade_file, testing=False):
         gobject.GObject.__init__(self) #@UndefinedVariable
@@ -34,9 +29,9 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
         
         self.builder.connect_signals(self.dialog, self.dialog)
         
-        Bus.add_emission_hook("lastfm_username_changed",    self.on_username_changed)
-        Bus.add_emission_hook("lastfm_proxy_detected",      self.on_lastfm_proxy_detected)
-        Bus.add_emission_hook("musicbrainz_proxy_detected", self.on_musicbrainz_proxy_detected)
+        Bus.subscribe("lastfm_username_changed",    self.on_username_changed)
+        Bus.subscribe("lastfm_proxy_detected",      self.on_lastfm_proxy_detected)
+        Bus.subscribe("musicbrainz_proxy_detected", self.on_musicbrainz_proxy_detected)
 
         self.mb_proxy_detected=False
         self.lb_proxy_detected=False
@@ -65,8 +60,8 @@ class ConfigDialog(gobject.GObject): #@UndefinedVariable
 
     def on_show(self, *_):
         print "on_show"
-        Bus.emit("lastfm_proxy_detected?")
-        Bus.emit("musicbrainz_proxy_detected?")
+        Bus.publish(self, "lastfm_proxy_detected?")
+        Bus.publish(self, "musicbrainz_proxy_detected?")
         self._upLfProxy()
         self._upMbProxy()
 

@@ -22,35 +22,31 @@
 """
 import rhythmdb #@UnresolvedImport
 
-import gobject
-from synclastfm.system.bus import Bus
+from synclastfm.system.mbus import Bus
 
 
-class Updater(gobject.GObject): #@UndefinedVariable
+class Updater(object): #@UndefinedVariable
     """
     Updates various properties
     """
     def __init__(self):
-        gobject.GObject.__init__(self) #@UndefinedVariable
         self._shell=None
         self._db=None
         
         #Bus.add_emission_hook("track",           self.h_track)
-        Bus.add_emission_hook("track_entry",     self.on_track_entry)
-        Bus.add_emission_hook("user_track_info", self.on_user_track_info)
-        Bus.add_emission_hook("rb_shell",        self.on_rb_shell)
+        Bus.subscribe("track_entry",     self.on_track_entry)
+        Bus.subscribe("user_track_info", self.on_user_track_info)
+        Bus.subscribe("rb_shell",        self.on_rb_shell)
         
-    def on_rb_shell(self, _signal, rbobjects):
+    def on_rb_shell(self, rbobjects):
         """
         Grab RB objects references (shell, db, player)
         
         GObject handler
         """
-        self._robjects=rbobjects
-        self._db=self._robjects.db
-        return True
+        self._shell, self._db, _ = rbobjects
         
-    def on_track_entry(self, _, trackWrapper):
+    def on_track_entry(self, trackWrapper):
         """
         Note: track_entry is defined in "Finder"
         """
@@ -62,7 +58,7 @@ class Updater(gobject.GObject): #@UndefinedVariable
         ## If Finder didn't find an entry in the database,
         ## we can't do much at this point
         if dbe is None:
-            return True
+            return
         
         ## The 'track_entry' should contain a field 'lfid'
         ##  and the value should be formatted:
@@ -71,20 +67,20 @@ class Updater(gobject.GObject): #@UndefinedVariable
         except: lfid=None
         
         if lfid is None:
-            return True
+            return
         
         try:    pieces=lfid.split(":")
         except: pieces=None
         
         if pieces is None:
             print "Can't extract 'lfid' fields!"
-            return True
+            return
         
         
         try: playcount=long(pieces[2])
         except:
             print "** Playcount not found"
-            return True
+            return
         
         print "updating: lfid(%s)" % lfid
         
@@ -94,13 +90,11 @@ class Updater(gobject.GObject): #@UndefinedVariable
         except Exception,e:
             print "ERROR: updating 'playcount' for track: %s" % e
         
-        Bus.emit("track_updated", te)
-        
-        return True
+        Bus.publish(self, "track_updated", te)
         
         
         
-    def on_user_track_info(self, _signal, track):
+    def on_user_track_info(self, track):
         """
         GObject handler
         
@@ -124,7 +118,7 @@ class Updater(gobject.GObject): #@UndefinedVariable
         try:    lfmpc=int(track.lastfm_info.get("track.userplaycount", 0))
         except: lfmpc=0
         
-        #print ">> rating(%s) love(%s) local lastfm playcount(%s)" % (rating, love, lfmpc)
+        print ">> rating(%s) love(%s) local lastfm playcount(%s)" % (rating, love, lfmpc)
         
         try:    track_mbid=str(track.lastfm_info.get("track.mbid", ""))
         except: track_mbid=""
@@ -159,9 +153,6 @@ class Updater(gobject.GObject): #@UndefinedVariable
                 
         except Exception, e:
             print "!! Exception whilst updating track, msg=%s" % str(e)
-            
-        return True
 
-gobject.type_register(Updater) #@UndefinedVariable
 
 _=Updater()

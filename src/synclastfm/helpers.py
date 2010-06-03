@@ -3,8 +3,6 @@
 
     @author: jldupont
 """
-import gobject
-
 import rhythmdb #@UnresolvedImport
 
 
@@ -39,21 +37,3 @@ class EntryHelper(object):
             pass
         return result
    
-
-class WrapperGObject(gobject.GObject): #@UndefinedVariable
-    """
-    Wrapper for non-gobject objects
-    """
-    def __init__(self, **kw):
-        gobject.GObject.__init__(self) #@UndefinedVariable
-        self.__dict__.update(kw)
-
-gobject.type_register(WrapperGObject) #@UndefinedVariable
-
-
-## ===================================================== TESTS
-
-if __name__=="__main__":
-    w2=WrapperGObject(key1="value1", key2="value2")
-    print w2.__dict__
-
