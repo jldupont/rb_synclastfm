@@ -38,6 +38,7 @@ from helpers import EntryHelper
 from config import ConfigDialog
 from track import Track
 
+import system.mswitch
 import agents.bridge
 import agents.user
 import agents.lastfm
@@ -46,7 +47,7 @@ import agents.updater
 #import agents.lastfm_proxy
 #import agents.state
 #import agents.finder
-#import agents.mb
+import agents.mb
 ##import agents.metadb not used since musicbrainz-proxy > v2.x
 
 

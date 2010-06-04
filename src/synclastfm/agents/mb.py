@@ -29,22 +29,12 @@
     @author: jldupont
     @date: May 31, 2010
 """
-import gobject
 import dbus.service
 
-
-from synclastfm.system.bus import Bus
 from synclastfm.track import Track
-from synclastfm.system.dtype import SimpleStore
+#from synclastfm.system.dtype import SimpleStore
 
-
-class MBEntry(gobject.GObject): #@UndefinedVariable
-    def __init__(self, source, rbid, details):
-        gobject.GObject.__init__(self) #@UndefinedVariable
-        self.source=str(source)
-        self.rbid=int(rbid)
-        self.details=details
-        
+from synclastfm.system.base import AgentThreadedBase
 
 class DbusInterface(dbus.service.Object):
     """
@@ -54,9 +44,15 @@ class DbusInterface(dbus.service.Object):
     CACHE_ENTRIES=256
     
     
-    def __init__(self):
+    def __init__(self, agent):
         dbus.service.Object.__init__(self, dbus.SessionBus(), self.PATH)
-        #self.ss=SimpleStore(self.CACHE_ENTRIES)
+        self.agent=agent
+        dbus.Bus().add_signal_receiver(self.sTracks, 
+                               signal_name="Tracks", 
+                               dbus_interface="com.jldupont.musicbrainz.proxy", 
+                               bus_name=None, 
+                               path="/Tracks")
+
 
     @dbus.service.signal(dbus_interface="com.jldupont.musicbrainz.proxy", signature="vvv")
     def qTrack(self, ref, artist_name, track_name):
@@ -102,50 +98,31 @@ class DbusInterface(dbus.service.Object):
             
             #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
                     
-            Bus.emit("mb_track", track)
+            self.agent.pub("mb_track", track)
             
-        Bus.emit("musicbrainz_proxy_detected", True)
+        self.agent.pub("musicbrainz_proxy_detected", True)
         
         
 
-dbusif=DbusInterface()
-dbus.Bus().add_signal_receiver(dbusif.sTracks, 
-                               signal_name="Tracks", 
-                               dbus_interface="com.jldupont.musicbrainz.proxy", 
-                               bus_name=None, 
-                               path="/Tracks")
 
 
 
-class MBAgent(gobject.GObject):  #@UndefinedVariable
 
-    def __init__(self, dbusif): 
-        gobject.GObject.__init__(self) #@UndefinedVariable
-        self.dbusif=dbusif
+class MBAgent(AgentThreadedBase):  #@UndefinedVariable
+
+    def __init__(self): 
+        AgentThreadedBase.__init__(self)
+        
+        self.dbusif=DbusInterface(self)
         self.detected=False
         
-        #Bus.add_emission_hook("rb_shell", self.on_rb_shell)
-        Bus.add_emission_hook("track?",                  self.hq_track)
-        Bus.add_emission_hook("track",                   self.h_track)
-        Bus.add_emission_hook("playing_song_changed",    self.on_playing_song_changed)
-        Bus.add_emission_hook("musicbrainz_proxy_detected", self.h_musicbrainz_proxy_detected)
-        Bus.add_emission_hook("musicbrainz_proxy_detected?", self.hq_musicbrainz_proxy_detected)
-        
-
-    def h_musicbrainz_proxy_detected(self, _, state):
+    def h_musicbrainz_proxy_detected(self, state):
         self.detected=state
 
     def hq_musicbrainz_proxy_detected(self, *_):
         Bus.emit("musicbrainz_proxy_detected",self.detected)
 
-    def on_playing_song_changed(self, _, track):
-        """
-        Event from RB
-        """
-        self._loopkup(track)
-        return True
-       
-    def h_track(self, _, track):
+    def h_track(self, track):
         """
         if 'track_mbid' is already set, don't lookup with proxy.
         
@@ -165,10 +142,12 @@ class MBAgent(gobject.GObject):  #@UndefinedVariable
         return True
         
                 
-    def hq_track(self, _, track):
+    def hq_track(self, track):
         """
         See if we need to lookup the track's mbid
         """
+        print "mb.hq_track"
+        
         try:    track_mbid= str( track.details["track_mbid"] )
         except: track_mbid= ""
             
@@ -212,7 +191,7 @@ class MBAgent(gobject.GObject):  #@UndefinedVariable
         self.dbusif.qTrack(reqid, artist_name, track_name)
         
         return True
-        
 
-## Kick start the agent
-_=MBAgent(dbusif)
+## Kick start the agent        
+_=MBAgent()
+_.start()

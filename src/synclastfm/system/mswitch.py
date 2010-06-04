@@ -33,6 +33,9 @@ class BasicSwitch(Thread):
             envelope=self.iq.get(block=True)
             mtype, payload=envelope
             
+            #if mtype != "tick":
+            #    print "run: mtype: %s  payload: %s" % (mtype, payload)
+            
             if mtype=="__sub__":
                 q=payload
                 self.do_sub(q)
@@ -56,7 +59,8 @@ class BasicSwitch(Thread):
         """
         Performs message distribution
         """
-        #print "do_pub: mtype: %s  payload: %s" % (mtype, payload)
+        #if mtype != "tick":
+            #print "do_pub: mtype: %s  payload: %s" % (mtype, payload)
         for q in self.clients:
             #print "switch.do_pub: q, mtype: ", q, mtype
             q.put((mtype, payload))
