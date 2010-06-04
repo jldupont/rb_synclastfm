@@ -32,8 +32,6 @@
 import dbus.service
 
 from synclastfm.track import Track
-#from synclastfm.system.dtype import SimpleStore
-
 from synclastfm.system.base import AgentThreadedBase
 
 class DbusInterface(dbus.service.Object):
@@ -41,8 +39,6 @@ class DbusInterface(dbus.service.Object):
     DBus interface - listening for signals from Musicbrainz Proxy DBus
     """
     PATH="/Tracks"
-    CACHE_ENTRIES=256
-    
     
     def __init__(self, agent):
         dbus.service.Object.__init__(self, dbus.SessionBus(), self.PATH)
@@ -55,10 +51,11 @@ class DbusInterface(dbus.service.Object):
 
 
     @dbus.service.signal(dbus_interface="com.jldupont.musicbrainz.proxy", signature="vvv")
-    def qTrack(self, ref, artist_name, track_name):
+    def qTrack(self, _ref, _artist_name, _track_name):
         """
         Signal Emitter - qTrack
         """
+        
 
     def sTracks(self, _source, ref, tracks):
         """
@@ -67,38 +64,24 @@ class DbusInterface(dbus.service.Object):
         Verify the "ref" parameter to make sure it is
         in reponse to a 'question' we asked
         """
-        #print "sTrack: source(%s), ref(%s)" % (source, ref)
         
-        ## Make sure it is a signal that answers a question we asked
-        ##  in the first place
-        try:    pieces=ref.split(":")
-        except: pieces=None
-        
-        ## most probably not ours.
-        if pieces is None:
-            return
-        
-        try:    idstr=str(pieces[0])
-        except: idstr=None
+        try:    
+            rbstr, ukey=ref.split(":")
+            rb=(rbstr=="rb")
+        except:
+            if ref=="rb":
+                ukey=None
+                rb=True
 
-        try:    id=long(pieces[1])
-        except: id=None
-               
-        ## Yep, not ours.
-        if idstr!="rb":
-            return
-        
-        if id is None:
+        ## we are not interested in response to requests of others
+        if not rb:
             return
         
         ## Don't forget to add the 'ref' field back!
         for track_details in tracks:
             track=Track(track_details)
-            track.details[idstr]=ref
-            
-            #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
-                    
-            self.agent.pub("mb_track", track)
+            self.agent.pub("mb_track", ukey, track)
+            print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
             
         self.agent.pub("musicbrainz_proxy_detected", True)
         
@@ -108,28 +91,24 @@ class DbusInterface(dbus.service.Object):
 
 
 
-class MBAgent(AgentThreadedBase):  #@UndefinedVariable
+class MBAgent(AgentThreadedBase):
 
     def __init__(self): 
         AgentThreadedBase.__init__(self)
-        
         self.dbusif=DbusInterface(self)
-        self.detected=False
         
-    def h_musicbrainz_proxy_detected(self, state):
-        self.detected=state
-
-    def hq_musicbrainz_proxy_detected(self, *_):
-        Bus.emit("musicbrainz_proxy_detected",self.detected)
-
-    def h_track(self, track):
+    def h_ctrack(self, ukey, track):
         """
+        'ctrack' message handler - from CacheTrack Agent
+        
         if 'track_mbid' is already set, don't lookup with proxy.
         
         If 'track_mbid' isn't set, the message probably comes
         from 'lastfm_proxy agent' and thus a lookup should
         be performed.
         """
+        #print "h_ctrack, ukey(%s)" % ukey
+        
         try:    
             track_mbid= track.details["track_mbid"]
             if track_mbid is None:
@@ -137,47 +116,20 @@ class MBAgent(AgentThreadedBase):  #@UndefinedVariable
         except: track_mbid= ""
             
         if len(track_mbid) < 36:
-            self._loopkup(track)
-
-        return True
+            self._loopkup(ukey, track)
         
-                
-    def hq_track(self, track):
-        """
-        See if we need to lookup the track's mbid
-        """
-        print "mb.hq_track"
-        
-        try:    track_mbid= str( track.details["track_mbid"] )
-        except: track_mbid= ""
-            
-        if len(track_mbid) < 36:
-            self._loopkup(track)
-            
-        return True
-        
-    def _loopkup(self, track):
+              
+    def _loopkup(self, ukey, track):
         """
         Sends the signal 'qTrack' over DBus to Musicbrainz-Proxy
-        
-        
         """
-        #print "_lookup: track: %s " % track
-        try:    reqid="rbid:%s" % track.details["rbid"]
-        except:
-            try:
-                reqid="lfid:%s" % track.details["lfid"]
-            except:
-                print "invalid id! Expecting 'rbid' or 'lfid'"
-                return
-        
         try: 
             track_name= track.details["track_name"]
             artist_name=track.details["artist_name"]
             track_mbid= track.details["track_mbid"]
         except Exception, e:
             print "error retrieving track info: %s " % e
-            return True
+            return
         
         try:    l=len(str(track_mbid))
         except: l=0
@@ -185,12 +137,16 @@ class MBAgent(AgentThreadedBase):  #@UndefinedVariable
         ## to account for the mess I might have put the database into...
         if l == 36:
             print "track_mbid already present: %s, %s" % (artist_name, track_name)
-            return True
+            return
+        
+        if ukey is not None:
+            ref="rb:%s" % str(ukey)
+        else:
+            ref="rb"
         
         ### Ask Musicbrainz Proxy for some more info
-        self.dbusif.qTrack(reqid, artist_name, track_name)
-        
-        return True
+        self.dbusif.qTrack(ref, artist_name, track_name)
+
 
 ## Kick start the agent        
 _=MBAgent()

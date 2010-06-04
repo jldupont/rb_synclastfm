@@ -43,6 +43,7 @@ import agents.bridge
 import agents.user
 import agents.lastfm
 import agents.updater
+import agents.cache_track
 
 #import agents.lastfm_proxy
 #import agents.state
@@ -73,7 +74,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
                                self.playing_song_changed),
                    )
         ## Distribute the vital RB objects around
-        Bus.publish(self, "rb_shell", shell, db, sp)
+        Bus.publish("pluging", "rb_shell", shell, db, sp)
         
     def deactivate (self, shell):
         self.shell = None
@@ -95,7 +96,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
             proxy=ConfigDialog(glade_file_path)
             dialog=proxy.get_dialog() 
         dialog.present()
-        Bus.publish(self, "config?")
+        Bus.publish("pluging", "config?")
         return dialog
 
             
@@ -105,13 +106,13 @@ class SyncLastFMDKPlugin (rb.Plugin):
         """
         ## unfortunately, I don't have a better process
         ## for keeping the "user parameters" synced just yet...
-        Bus.publish(self, "config?")
+        Bus.publish("pluging", "config?")
         
         self.current_entry = sp.get_playing_entry()
         details=EntryHelper.track_details(self.shell, entry)
         if details:
             track=Track(details=details, entry=self.current_entry)
-            Bus.publish(self, "track?", track)
+            Bus.publish("pluging", "track?", track)
 
 
 count=0

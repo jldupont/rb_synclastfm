@@ -38,10 +38,11 @@ class BoundedDict(object):
     KeyError: 'e2'
     """
     
-    def __init__(self, size=10):
+    def __init__(self, size=10, destructive=True):
         self.size=size
         self.dic={}
         self.lru=[]
+        self.destructive=destructive
        
     def __getitem__(self, key):
         """
@@ -51,10 +52,11 @@ class BoundedDict(object):
         el=self.dic[key]
         
         ## but clean-up nicely if necessary
-        try:    
-            self.lru.remove(key)
-            del self.dic[key]
-        except: pass
+        if self.destructive:
+            try:    
+                self.lru.remove(key)
+                del self.dic[key]
+            except: pass
         
         return el
         
@@ -79,6 +81,9 @@ class BoundedDict(object):
         try:    del self.dic[key]
         except: pass
     
+    def csize(self):
+        return len(self.lru)
+    
 
 class SimpleStore(object):
     """
@@ -91,8 +96,8 @@ class SimpleStore(object):
         ...
     KeyError: ...
     """
-    def __init__(self, size=10):
-        self.bd=BoundedDict(size)
+    def __init__(self, size=10, destructive=True):
+        self.bd=BoundedDict(size, destructive)
         
     def store(self, element):
         """
@@ -108,10 +113,16 @@ class SimpleStore(object):
         """
         Retrieves an 'element'
         
+        >>> ss=SimpleStore(2)
+        >>> ss.csize()
+        0
+        
         Raises 'KeyError' exception if not found
         """
         return self.bd[key]
     
+    def csize(self):
+        return self.bd.csize()
         
 if __name__=="__main__":
     

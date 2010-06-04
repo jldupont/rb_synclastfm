@@ -34,9 +34,9 @@ class Updater(object): #@UndefinedVariable
         self._db=None
         
         #Bus.add_emission_hook("track",           self.h_track)
-        Bus.subscribe("track_entry",     self.on_track_entry)
-        Bus.subscribe("user_track_info", self.on_user_track_info)
-        Bus.subscribe("rb_shell",        self.on_rb_shell)
+        Bus.subscribe("Updater", "track_entry",     self.on_track_entry)
+        Bus.subscribe("Updater", "user_track_info", self.on_user_track_info)
+        Bus.subscribe("Updater", "rb_shell",        self.on_rb_shell)
         
     def on_rb_shell(self, shell, db, _sp):
         """
@@ -91,7 +91,7 @@ class Updater(object): #@UndefinedVariable
         except Exception,e:
             print "ERROR: updating 'playcount' for track: %s" % e
         
-        Bus.publish(self, "track_updated", te)
+        Bus.publish("Updater", "track_updated", te)
         
         
         

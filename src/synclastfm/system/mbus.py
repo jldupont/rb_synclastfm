@@ -69,7 +69,7 @@ class Bus(object):
         cls.callstack=[]
     
     @classmethod
-    def subscribe(cls, msgType, callback):
+    def subscribe(cls, subscriber, msgType, callback):
         """
         Subscribe to a Message Type
         
@@ -82,7 +82,7 @@ class Bus(object):
         try:
             cls._maybeLog(msgType, "subscribe: subscriber(%s) msgType(%s)" % (str(callback), msgType))
             subs=cls.ftable.get(msgType, [])
-            subs.append((str(callback), callback))
+            subs.append((str(subscriber), callback))
             cls.ftable[msgType]=subs
         except Exception, e:
             raise RuntimeError("Bus.subscribe: exception: subscribe: %s" % str(e))
@@ -93,7 +93,7 @@ class Bus(object):
             cls.publish("__bus__", "_sub", msgType)
         
     @classmethod
-    def publish(cls, caller, msgType, *pa, **kwa):
+    def publish(cls, acaller, msgType, *pa, **kwa):
         """
         Publish a message from a specific type on the bus
         
@@ -101,6 +101,8 @@ class Bus(object):
         @param *pa:   positional arguments
         @param **kwa: keyword based arguments
         """
+        caller=str(acaller)
+        
         if msgType in cls.callstack:
             raise RuntimeError("Bus: cycle detected: %s" % cls.callstack)
         

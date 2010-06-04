@@ -26,11 +26,11 @@ class LastFmResponseCallback(object):
         try:
             track_info=rapi.processResponse(response)
             self.track.lastfm_info=track_info
-            Bus.publish(self, "user_track_info", self.track)
+            Bus.publish("lastfmcallback", "user_track_info", self.track)
             #print ">> user_track_info: " + str(track_info)            
         except Exception,e:
             print "LastFmResponseCallback: Exception: " + str(e)
-            Bus.publish(self, "lastfm_request_failed")
+            Bus.publish("lastfmcallback", "lastfm_request_failed")
         
 
 
@@ -47,11 +47,11 @@ class LastFmResponseCallbackGeneric(object):
         try:
             track_info=rapi.processResponse(response)
             self.track.lastfm_info=track_info
-            Bus.publish(self, "track_info", self.track)
+            Bus.publish("lastfmcallback", "track_info", self.track)
             #print "track_info: " + str(track_info)            
         except Exception,e:
             print "LastFmResponseCallback: Exception: " + str(e)
-            Bus.publish(self, "lastfm_request_failed")
+            Bus.publish("lastfmcallback", "lastfm_request_failed")
 
 
  
@@ -61,8 +61,8 @@ class LastFmAgent(object):
         self._lfmusername=""
         
         ##Bus.add_emission_hook("q_track_info",            self.hq_track_info)
-        Bus.subscribe("track?",                  self.hq_track)
-        Bus.subscribe("lastfm_username_changed", self.on_lastfm_username_changed)
+        Bus.subscribe("LastfmAgent", "track?",                  self.hq_track)
+        Bus.subscribe("LastfmAgent", "lastfm_username_changed", self.on_lastfm_username_changed)
         
     def on_lastfm_username_changed(self, username):
         """

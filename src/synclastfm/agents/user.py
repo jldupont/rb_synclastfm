@@ -21,7 +21,7 @@ class LastFmUser(object):  #@UndefinedVariable
         self._username=username
         self._password=password
         
-        Bus.subscribe("config?", self.hq_config)
+        Bus.subscribe("User", "config?", self.hq_config)
         
     def _refresh(self):
         """
@@ -40,8 +40,8 @@ class LastFmUser(object):  #@UndefinedVariable
         self._announceChanges()
       
     def _announceChanges(self):
-        Bus.publish(self, "lastfm_username_changed", self._username)
-        Bus.publish(self, "lastfm_password_changed", self._password)
+        Bus.publish("User", "lastfm_username_changed", self._username)
+        Bus.publish("User", "lastfm_password_changed", self._password)
 
       
 _=LastFmUser()

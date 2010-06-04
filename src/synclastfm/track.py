@@ -20,7 +20,18 @@ class Track(object):
     "track_mbid":  track's Musicbrainz UUID
     "artist_mbid": artist's Musicbrainz UUID
     """
-    def __init__(self, details, entry=None, lastfm_info=None):
+    def __init__(self, details, entry=None, lastfm_info={}):
         self.details=details
-        self.entry=entry
         self.lastfm_info=lastfm_info
+        
+        ## RB database entry
+        self.entry=entry
+
+    def merge(self, track):
+        """
+        Merges the information from another 'track' object in this one
+        
+        The other object's fields have higher priority than this one's
+        """
+        self.details.update(track.details)
+        self.lastfm_info.update(track.lastfm_info)
