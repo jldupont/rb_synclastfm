@@ -84,7 +84,7 @@ class DbusInterface(dbus.service.Object):
             print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
             
         self.agent.pub("musicbrainz_proxy_detected", True)
-        
+        self.agent.detected=True
         
 
 
@@ -96,6 +96,11 @@ class MBAgent(AgentThreadedBase):
     def __init__(self): 
         AgentThreadedBase.__init__(self)
         self.dbusif=DbusInterface(self)
+        self.detected=False
+        
+    def hq_musicbrainz_proxy_detected(self):
+        self.pub("musicbrainz_proxy_detected", self.detected)
+        
         
     def h_ctrack(self, ukey, track):
         """

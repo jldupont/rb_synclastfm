@@ -10,8 +10,10 @@
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <signal name="destroy" handler="on_config_dialog_destroy"/>
+    <signal name="visibility_notify_event" handler="on_show"/>
     <signal name="activate_focus" handler="on_show"/>
     <signal name="activate_default" handler="on_show"/>
+    <signal name="show" handler="on_show"/>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
