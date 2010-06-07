@@ -39,7 +39,6 @@ class CacheTrackAgent(AgentThreadedBase):
         
         ukey=self.ss.store(track)
         self.pub("ctrack", ukey, track)
-        print "hq_track, ukey(%s)" % ukey
 
         
     def h_track(self, track):
@@ -67,6 +66,12 @@ class CacheTrackAgent(AgentThreadedBase):
         matching the same 'track_mbid' will be returned.  This helps finding
         an entry in the RB database.
         """
+        
+        ## some agents might used the services of other agents without
+        ## needing caching here.
+        if ukey is None:
+            return
+        
         try:    otrack=self.ss.retrieve(ukey)
         except: 
             print "!! Unable to retrieve from cache: key(%s)" % ukey

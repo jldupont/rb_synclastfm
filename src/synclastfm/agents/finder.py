@@ -13,28 +13,26 @@
     @date: May 27, 2010
 """
 import rhythmdb #@UnresolvedImport
-import gobject
 
-from synclastfm.system.bus import Bus
+from synclastfm.system.mbus import Bus
 
 
-class TrackEntryWrapper(gobject.GObject):       #@UndefinedVariable
+class TrackEntryWrapper(object):
     def __init__(self, track_entry, db_entry): 
-        gobject.GObject.__init__(self)          #@UndefinedVariable
         self.track_entry=track_entry
         self.db_entry=db_entry
         
 
-class FinderAgent(gobject.GObject):  #@UndefinedVariable
+class FinderAgent(object):
 
     def __init__(self): 
         gobject.GObject.__init__(self) #@UndefinedVariable
         self.db=None
 
-        Bus.add_emission_hook("mb_track",     self.h_mb_track)
-        Bus.add_emission_hook("rb_shell",     self.on_rb_shell)
+        Bus.subscribe("FinderAgent", "mb_track",     self.h_mb_track)
+        Bus.subscribe("FinderAgent", "rb_shell",     self.on_rb_shell)
 
-    def on_rb_shell(self, _signal, rbobjects):
+    def on_rb_shell(self, rbobjects):
         """
         Grab RB objects references (shell, db, player)
         
@@ -42,10 +40,10 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
         """
         self._robjects=rbobjects
         self.db=self._robjects.db
-        return True        
+
     
 
-    def h_mb_track(self, _, track):
+    def h_mb_track(self, track):
         """
         For each 'mb_track' received, try to find a corresponding
         rb db entry and issue a "track_entry" message.
@@ -75,9 +73,7 @@ class FinderAgent(gobject.GObject):  #@UndefinedVariable
             print "-- NOT FOUND: artist(%s) track(%s)" % (artist_name, track_name)
             
         te=TrackEntryWrapper(track, dbe)
-        Bus.emit("track_entry", te)
-            
-        return True
+        Bus.publish("FinderAgent", "track_entry", te)
     
 
 _=FinderAgent()

@@ -1,23 +1,28 @@
 """
     State Agent
     
+    Maintains state information in the gnome configuration registry
+    
     MESSAGES IN:
+    - "last_db_mtime?"
+    - "last_db_mtime"
+    - "track_updated"
     - "last_ts?"
     
     MESSAGES OUT:
     - "last_ts"
+    - "last_db_mtime"
 
     @author: jldupont
     @date: May 27, 2010
 """
 import gconf
-import gobject
 
 ## locals
-from synclastfm.system.bus import Bus
+from synclastfm.system.mbus import Bus
 
 
-class StateAgent(gobject.GObject):  #@UndefinedVariable
+class StateAgent(object):  #@UndefinedVariable
 
     PATH="/apps/rhythmbox/synclastfm/%s"
     
@@ -25,12 +30,22 @@ class StateAgent(gobject.GObject):  #@UndefinedVariable
         gobject.GObject.__init__(self) #@UndefinedVariable
 
         self.last_ts=0
-        Bus.add_emission_hook("q_last_ts",     self.q_last_ts)
-        Bus.add_emission_hook("track_updated", self.h_track_updated)
+        Bus.subscribe("StateAgent", "q_last_ts",     self.q_last_ts)
+        Bus.subscribe("StateAgent", "track_updated", self.h_track_updated)
 
         self.gclient=gconf.client_get_default()
 
-    def h_track_updated(self, _, track):
+    def hq_last_db_mtime(self, *_):
+        try:    value=self.gclient.get_int(self.PATH % "last_db_mtime")
+        except: value=0
+        Bus.publish("StateAgent", "last_db_mtime", value)
+
+    def h_last_db_mtime(self, value):
+        try:    self.gclient.set_int(self.PATH % "last_db_mtime", value)
+        except: 
+            print "Can't update the 'last_db_mtime' field!"
+
+    def h_track_updated(self,track):
         """
         Adjust 'last_ts' information
         """
@@ -62,7 +77,7 @@ class StateAgent(gobject.GObject):  #@UndefinedVariable
         if self.last_ts is None:
             self.last_ts=0
             
-        Bus.emit("last_ts", self.last_ts)
+        Bus.publish("StateAgent", "last_ts", self.last_ts)
         return True
         
 

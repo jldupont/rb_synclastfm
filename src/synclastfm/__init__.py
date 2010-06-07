@@ -44,12 +44,13 @@ import agents.user
 import agents.lastfm
 import agents.updater
 import agents.cache_track
+import agents.mb
+import agents.state
+import agents.libwalker
 
 #import agents.lastfm_proxy
-#import agents.state
+
 #import agents.finder
-import agents.mb
-##import agents.metadb not used since musicbrainz-proxy > v2.x
 
 
 PLUGIN_NAME="synclastfm"
@@ -115,15 +116,15 @@ class SyncLastFMDKPlugin (rb.Plugin):
             Bus.publish("pluging", "track?", track)
 
 
+TICK_FREQ=4
 count=0
 def gen_tick():
     global count
-    Bus.publish("__gen_tick__", "tick", count)
+    Bus.publish("__gen_tick__", "tick", TICK_FREQ, count)
     #print "tick: count(%s)" % count
     count += 1
     return True
 
-TICK_FREQ=4
 gobject.timeout_add(1000/TICK_FREQ, gen_tick)  #@UndefinedVariable
 
 

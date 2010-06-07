@@ -69,6 +69,8 @@ class DbusInterface(dbus.service.Object):
             rbstr, ukey=ref.split(":")
             rb=(rbstr=="rb")
         except:
+            ## entirely possible that no unique key was
+            ## used as reference in the query
             if ref=="rb":
                 ukey=None
                 rb=True
@@ -101,6 +103,11 @@ class MBAgent(AgentThreadedBase):
     def hq_musicbrainz_proxy_detected(self):
         self.pub("musicbrainz_proxy_detected", self.detected)
         
+    def hq_track(self, track):
+        """
+        Helps the track resolving functionality
+        """
+        self.h_ctrack(None, track)
         
     def h_ctrack(self, ukey, track):
         """
@@ -144,6 +151,9 @@ class MBAgent(AgentThreadedBase):
             print "track_mbid already present: %s, %s" % (artist_name, track_name)
             return
         
+        ## just in case some other agent(s) require our
+        ## service but aren't needing a unique key for
+        ## tracking their request
         if ukey is not None:
             ref="rb:%s" % str(ukey)
         else:
