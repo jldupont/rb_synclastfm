@@ -65,21 +65,14 @@ class LastFmAgent(object):
         Bus.subscribe("LastfmAgent", "lastfm_username_changed", self.on_lastfm_username_changed)
         
     def on_lastfm_username_changed(self, username):
-        """
-        GObject handler
-        """        
         self._lfmusername=username
-        return True #required for gobject
         
     def hq_track(self, track):
         """
-        GObject handler
-        
         @param: an instance of the Track class
         """
         cb=LastFmResponseCallback(track)
         self._fetch(cb, track)
-        return True #required for gobject
 
 
     #def hq_track_info(self, _, track):

@@ -11,7 +11,7 @@
     MESSAGES IN:
     - "rb_shell"
     - "track?"
-    - "track"   (mainly from lastfm_proxy)
+    - "ctrack"   (mainly from lastfm_proxy)
     
     
     MESSAGES OUT:
@@ -57,7 +57,7 @@ class DbusInterface(dbus.service.Object):
         """
         
 
-    def sTracks(self, _source, ref, tracks):
+    def sTracks(self, source, ref, tracks):
         """
         Signal Receptor - Track
         
@@ -82,8 +82,8 @@ class DbusInterface(dbus.service.Object):
         ## Don't forget to add the 'ref' field back!
         for track_details in tracks:
             track=Track(track_details)
-            self.agent.pub("mb_track", ukey, track)
-            #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
+            self.agent.pub("mb_track", source, ukey, track)
+            #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (source, ref, track.details["artist_name"], track.details["track_name"])
             
         self.agent.pub("musicbrainz_proxy_detected", True)
         self.agent.detected=True

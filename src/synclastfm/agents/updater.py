@@ -33,7 +33,6 @@ class Updater(object): #@UndefinedVariable
         self._shell=None
         self._db=None
         
-        #Bus.add_emission_hook("track",           self.h_track)
         Bus.subscribe("Updater", "track_entry",     self.on_track_entry)
         Bus.subscribe("Updater", "user_track_info", self.on_user_track_info)
         Bus.subscribe("Updater", "rb_shell",        self.on_rb_shell)
@@ -41,8 +40,6 @@ class Updater(object): #@UndefinedVariable
     def on_rb_shell(self, shell, db, _sp):
         """
         Grab RB objects references (shell, db, player)
-        
-        GObject handler
         """
         self._shell=shell
         self._db=db
@@ -97,8 +94,6 @@ class Updater(object): #@UndefinedVariable
         
     def on_user_track_info(self, track):
         """
-        GObject handler
-        
         track.details : dict with extracted information from track.entry
         track.entry: an RB DB entry
         track.lastfm_info

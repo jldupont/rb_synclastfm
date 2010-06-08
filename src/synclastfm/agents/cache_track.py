@@ -37,18 +37,21 @@ class CacheTrackAgent(AgentThreadedBase):
         self.pub("ctrack", ukey, track)
 
         
-    def h_track(self, track, key=None):
+    def h_track(self, track, cache=True, key=None):
         """
         Keep the 'track' in cache
         
         When an "mb_track" comes back in, pull the original 'track':
         the said 'track' object contains the original contextual information
         """
-        ukey=self.ss.store(track, key)
-        self.pub("ctrack", ukey, track)
+        if cache:
+            ukey=self.ss.store(track, key)
+            self.pub("ctrack", ukey, track)
+        else:
+            self.pub("ctrack", key, track)
         
         
-    def h_mb_track(self, ukey, mb_track):
+    def h_mb_track(self, source, ukey, mb_track):
         """
         Pull the original 'track' from the cache
         based on the artist:track key
@@ -67,13 +70,13 @@ class CacheTrackAgent(AgentThreadedBase):
         
         try:    otrack=self.ss.retrieve(ukey)
         except: 
-            print "!! Unable to retrieve from cache: key(%s)" % ukey
+            #print "!! Unable to retrieve from cache: key(%s)" % ukey
             return
     
         ptrack=copy.deepcopy(mb_track)
         ptrack.merge(otrack)
         
-        self.pub("ptrack", ukey, ptrack)
+        self.pub("ptrack", source, ukey, ptrack)
 
         
             

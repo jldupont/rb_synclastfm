@@ -26,7 +26,6 @@ class TrackEntryWrapper(object):
 class FinderAgent(object):
 
     def __init__(self): 
-        gobject.GObject.__init__(self) #@UndefinedVariable
         self.db=None
 
         Bus.subscribe("FinderAgent", "mb_track",     self.h_mb_track)
@@ -35,15 +34,13 @@ class FinderAgent(object):
     def on_rb_shell(self, rbobjects):
         """
         Grab RB objects references (shell, db, player)
-        
-        GObject handler
         """
         self._robjects=rbobjects
         self.db=self._robjects.db
 
     
 
-    def h_mb_track(self, track):
+    def h_mb_track(self, source, ukey, track):
         """
         For each 'mb_track' received, try to find a corresponding
         rb db entry and issue a "track_entry" message.
