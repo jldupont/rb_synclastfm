@@ -99,13 +99,22 @@ class SimpleStore(object):
     def __init__(self, size=10, destructive=True):
         self.bd=BoundedDict(size, destructive)
         
-    def store(self, element):
+    def store(self, element, key=None):
         """
         Store an 'element' with a unique key
         
+        The key can either be specified or chosen
+        randomly.
+        
+        @param element: an element to store
+        @param key: a unique key OR None
         @return ukey: unique key
         """
-        ukey=str(uuid.uuid4())
+        if key is None:
+            ukey=str(uuid.uuid4())
+        else:
+            ukey=key
+
         self.bd[ukey]=element
         return ukey
     

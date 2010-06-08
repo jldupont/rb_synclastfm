@@ -37,3 +37,17 @@ class EntryHelper(object):
             pass
         return result
    
+    @classmethod
+    def track_details2(cls, db, entry):
+        """
+        Retrieves details associated with a db entry
+        
+        @return: (artist, title)
+        """
+        result={}
+        try:
+            for prop, key in cls.props.iteritems():
+                result[prop]=db.entry_get(entry, key)
+        except:
+            pass
+        return result

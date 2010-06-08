@@ -27,7 +27,6 @@ class StateAgent(object):  #@UndefinedVariable
     PATH="/apps/rhythmbox/synclastfm/%s"
     
     def __init__(self): 
-        gobject.GObject.__init__(self) #@UndefinedVariable
 
         self.last_ts=0
         Bus.subscribe("StateAgent", "q_last_ts",     self.q_last_ts)

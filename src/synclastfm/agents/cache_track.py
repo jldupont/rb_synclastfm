@@ -26,32 +26,25 @@ class CacheTrackAgent(AgentThreadedBase):
         AgentThreadedBase.__init__(self)
         self.ss=SimpleStore(size=self.CACHE_ENTRIES, destructive=False)
 
-    def hq_track(self, track):
+    def hq_track(self, track, key=None):
         """
         Keep the 'track' in cache
-        
-        Adds the 'ref' field to the track information and generates
-        the 'ctrack' message
         
         When an "mb_track" comes back in, pull the original 'track':
         the said 'track' object contains the original contextual information
         """
-        
-        ukey=self.ss.store(track)
+        ukey=self.ss.store(track, key)
         self.pub("ctrack", ukey, track)
 
         
-    def h_track(self, track):
+    def h_track(self, track, key=None):
         """
         Keep the 'track' in cache
-        
-        Adds the 'ref' field to the track information and generates
-        the 'ctrack' message
         
         When an "mb_track" comes back in, pull the original 'track':
         the said 'track' object contains the original contextual information
         """
-        ukey=self.ss.store(track)
+        ukey=self.ss.store(track, key)
         self.pub("ctrack", ukey, track)
         
         
@@ -80,7 +73,7 @@ class CacheTrackAgent(AgentThreadedBase):
         ptrack=copy.deepcopy(mb_track)
         ptrack.merge(otrack)
         
-        self.pub("ptrack", ptrack)
+        self.pub("ptrack", ukey, ptrack)
 
         
             

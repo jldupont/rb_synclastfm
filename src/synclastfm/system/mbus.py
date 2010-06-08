@@ -69,6 +69,10 @@ class Bus(object):
         cls.callstack=[]
     
     @classmethod
+    def sub(cls, subscriber, msgType, callback):
+        cls.sub(subscriber, msgType, callback)
+    
+    @classmethod
     def subscribe(cls, subscriber, msgType, callback):
         """
         Subscribe to a Message Type
@@ -91,6 +95,10 @@ class Bus(object):
         ##  This step is useful for "message bridges"
         if not msgType.startswith("_"):
             cls.publish("__bus__", "_sub", msgType)
+        
+    @classmethod
+    def pub(cls, acaller, msgType, *pa, **kwa):
+        cls.publish(acaller, msgType, *pa, **kwa)
         
     @classmethod
     def publish(cls, acaller, msgType, *pa, **kwa):

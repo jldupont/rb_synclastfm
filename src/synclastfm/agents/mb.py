@@ -83,7 +83,7 @@ class DbusInterface(dbus.service.Object):
         for track_details in tracks:
             track=Track(track_details)
             self.agent.pub("mb_track", ukey, track)
-            print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
+            #print "mb_track: source(%s) ref(%s) - artist(%s) title(%s)" %  (_source, ref, track.details["artist_name"], track.details["track_name"])
             
         self.agent.pub("musicbrainz_proxy_detected", True)
         self.agent.detected=True
