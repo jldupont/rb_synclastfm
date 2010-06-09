@@ -114,7 +114,7 @@ class Updater(object): #@UndefinedVariable
         try:    lfmpc=int(track.lastfm_info.get("track.userplaycount", 0))
         except: lfmpc=0
         
-        print ">> rating(%s) love(%s) local lastfm playcount(%s)" % (rating, love, lfmpc)
+        print ">> rating(%s) love(%s) lastfm playcount(%s)" % (rating, love, lfmpc)
         
         try:    track_mbid=str(track.lastfm_info.get("track.mbid", ""))
         except: track_mbid=""

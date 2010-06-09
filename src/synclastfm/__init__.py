@@ -19,6 +19,17 @@
     - Failure to communicate with Last.fm
     - Track cannot be found on Last.fm 
       - Wrong/insufficient detail locally
+
+    MESSAGES OUT:
+    =============
+    - "tick"
+    - "tick_params"
+    - "load_complete"
+    - "song_entries"
+    - "rb_shell"
+    - "entry_added"
+    - "track?"
+
     
 """
 import gobject
@@ -40,15 +51,15 @@ from track import Track
 
 import system.mswitch
 import agents.bridge
+import agents.timer
 import agents.user
 import agents.lastfm
 import agents.updater
 import agents.cache_track
 import agents.mb
-import agents.state
+#import agents.state
 import agents.libwalker
-
-#import agents.lastfm_proxy
+import agents.lastfm_proxy
 
 #import agents.finder
 
@@ -125,6 +136,7 @@ class SyncLastFMDKPlugin (rb.Plugin):
         Publishes the filtered list of db entries
         """
         self.load_complete=True
+        Bus.publish("pluging", "load_complete")
         Bus.publish("pluging", "song_entries", self.song_entries)
 
         

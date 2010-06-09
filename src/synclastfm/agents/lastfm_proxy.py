@@ -3,6 +3,8 @@
 
     Processes:
     - "last_ts"
+    - "lastfm_proxy_detected?"
+    - "libwalker_done"
     
     Emits:
     - "track" (with 'lfid' field)
@@ -16,17 +18,8 @@
 import dbus.service
 #import rhythmdb  #@UnresolvedImport
 
-import gobject
-from synclastfm.system.bus import Bus
+from synclastfm.system.base import AgentThreadedBase
 from synclastfm.track import Track
-
-class Records(gobject.GObject):        #@UndefinedVariable
-    """
-    Basic wrapper for Records
-    """
-    def __init__(self, source_obj):
-        gobject.GObject.__init__(self) #@UndefinedVariable
-        self.obj=source_obj
 
         
    
@@ -67,19 +60,11 @@ class DbusInterface(dbus.service.Object):
 
             keys=record.keys()
             for key in keys:
-                if key=="id":
-                    ## Prepare a 'ref' field with some context:
-                    ##  This is essential for processing the response signal
-                    ##  ref:  lfid:'id':'playcount'
-                    playcount=long(record["playcount"])
-                    id=str(record["id"])
-                    entry["lfid"]="%s:%s" % (id, playcount)
-                else:
-                    entry[str(key)]=record[str(key)]
+                entry[str(key)]=record[str(key)]
 
             track=Track(entry)
             Bus.emit("track", track)
-            
+
         Bus.emit("lastfm_proxy_detected", True)
         
         
@@ -93,73 +78,55 @@ dbus.Bus().add_signal_receiver(dbusif.sRecords,
     
 
 
-class LastfmProxy(gobject.GObject): #@UndefinedVariable
+class LastfmProxy(AgentThreadedBase):
     """
     Updates various properties
     """
-    FETCH_LIMIT=2
+    BATCH_SIZE=100
     
+    STATES=["waiting", "complete", "partial"]
+  
     def __init__(self, dbusif):
-        gobject.GObject.__init__(self) #@UndefinedVariable
-        self._shell=None
-        self._db=None
-        self._sp=None
-        self._robjects=None
+        AgentThreadedBase.__init__(self)
         self.dbusif=dbusif
         self.detected=False
+        self.lastTs=0
+
+    def h_timer_day(self, *_):
+        """
+        Each day, perform a complete sync
         
-        Bus.add_emission_hook("lastfm_proxy_detected",   self.h_lastfm_proxy_detected)
-        Bus.add_emission_hook("lastfm_proxy_detected?",  self.hq_lastfm_proxy_detected)
-        Bus.add_emission_hook("rb_shell",  self.on_rb_shell)
-        Bus.add_emission_hook("last_ts",   self.h_last_ts)
+        This process is helpful because resolving [artist;track]
+        to RB database entries can be fraught with problems i.e.
+        it may take several iterations through Musicbrainz / RB
+        to increase resolution accuracy to a workable level.
+        """
+        self.lastTs=0
         
-    def h_lastfm_proxy_detected(self, _, state):
-        self.detected=state
+    def h_timer_hour(self, *_):
+        """
+        Each hour, perform a partial sync
+        """
         
+    def h_lastfm_proxy_detected(self, detected):
+        """
+        Grab this status from the Dbus agent
+        """
+        self.detected=detected
+
     def hq_lastfm_proxy_detected(self, *_):
-        Bus.emit("lastfm_proxy_detected", self.detected)
+        """
+        Respond to other agents e.g. Config 
+        """
+        self.pub("lastfm_proxy_detected", self.detected)
         
-    def on_rb_shell(self, _signal, rbobjects):
+    def h_libwalker_done(self, *_):
         """
-        Grab RB objects references (shell, db, player)
+        Our trigger to start processing
+        """
         
-        GObject handler
-        """
-        self._robjects=rbobjects
-        self._db=self._robjects.db
-        self._sp=self._robjects.player
         
-        self._db.connect("load-complete", self.on_load_complete)
-        self._sp.connect("playing-song-changed", self.on_playing_song_changed)
-        return True
         
-    def h_last_ts(self, _, ts):
-        """
-        Receive the "last_ts" message
-        and asks for a "range" of records over DBus
-        to Lastfm Proxy DBus
-        """
-        #print "last_ts: %s" % ts
-        self.dbusif.qRecords(ts, self.FETCH_LIMIT)
-        return True
-            
-        
-    def on_playing_song_changed(self, *_):
-        """
-        We need to grab the latest "timestamp" we have
-        so that we can ask for the correct "range" of records
-        with LastfmSqlite
-        """
-        Bus.emit("q_last_ts")
-        return True
 
-        
-        
-    def on_load_complete(self, *_):
-        """
-        """
-        Bus.emit("q_last_ts")
-        return True
-
-gobject.type_register(LastfmProxy) #@UndefinedVariable
 _=LastfmProxy(dbusif)
+_.start()

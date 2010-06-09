@@ -40,7 +40,7 @@ class FinderAgent(object):
 
     
 
-    def h_mb_track(self, source, ukey, track):
+    def h_mb_track(self, _source, _ukey, track):
         """
         For each 'mb_track' received, try to find a corresponding
         rb db entry and issue a "track_entry" message.

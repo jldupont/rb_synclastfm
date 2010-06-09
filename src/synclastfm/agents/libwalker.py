@@ -7,6 +7,9 @@
     
     Features:
     - Rate limited
+    - 2 operational modes:
+      - "LOW"  : when high cache misses
+      - "HIGH" : when high cache hits
     
     Messages In:
     - "song_entries"
@@ -149,6 +152,7 @@ class LibWalker(object):
         
         ## nothing more todo!
         if l==0:
+            Bus.publish(self.__class__, "libwalker_done")
             return
         
         ## not the time to issue requests
