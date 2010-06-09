@@ -33,9 +33,9 @@ class Updater(object): #@UndefinedVariable
         self._shell=None
         self._db=None
         
-        Bus.subscribe("Updater", "track_entry",     self.on_track_entry)
-        Bus.subscribe("Updater", "user_track_info", self.on_user_track_info)
-        Bus.subscribe("Updater", "rb_shell",        self.on_rb_shell)
+        #Bus.subscribe(self.__class__, "track_entry",     self.on_track_entry)
+        Bus.subscribe(self.__class__, "user_track_info", self.on_user_track_info)
+        Bus.subscribe(self.__class__, "rb_shell",        self.on_rb_shell)
         
     def on_rb_shell(self, shell, db, _sp):
         """
@@ -44,11 +44,11 @@ class Updater(object): #@UndefinedVariable
         self._shell=shell
         self._db=db
         
-    def on_track_entry(self, trackWrapper):
+    def _on_track_entry(self, trackWrapper, artist_name, track_name):
         """
         Note: track_entry is defined in "Finder"
         """
-        te=trackWrapper.track_entry
+        te=trackWrapper.track
         dbe=trackWrapper.db_entry
         
         #print "te.details: %s" % te.details
@@ -57,30 +57,13 @@ class Updater(object): #@UndefinedVariable
         ## we can't do much at this point
         if dbe is None:
             return
-        
-        ## The 'track_entry' should contain a field 'lfid'
-        ##  and the value should be formatted:
-        ##   lfid:'id':'playcount'
-        try:    lfid=te.details["lfid"]
-        except: lfid=None
-        
-        if lfid is None:
-            return
-        
-        try:    pieces=lfid.split(":")
-        except: pieces=None
-        
-        if pieces is None:
-            print "Can't extract 'lfid' fields!"
-            return
-        
-        
-        try: playcount=long(pieces[2])
+               
+        try: playcount=track["playcount"]
         except:
             print "** Playcount not found"
             return
         
-        print "updating: lfid(%s)" % lfid
+        print "updating: artist(%s) track(%s) playcount(%s)" % (artist_name, track_name, playcount)
         
         try:
             self._db.set(dbe, rhythmdb.PROP_PLAY_COUNT, playcount)
@@ -88,7 +71,7 @@ class Updater(object): #@UndefinedVariable
         except Exception,e:
             print "ERROR: updating 'playcount' for track: %s" % e
         
-        Bus.publish("Updater", "track_updated", te)
+        Bus.publish(self.__class__, "track_updated", te, artist_name, track_name)
         
         
         

@@ -44,7 +44,7 @@ class DbusInterface(dbus.service.Object):
         Signal Receptor - Records
         
         Fields in each 'record':
-         - "id"         --> lfid
+         - "id"
          - "created"
          - "updated"
          - "playcount"
@@ -82,7 +82,7 @@ class LastfmProxy(AgentThreadedBase):
     """
     Updates various properties
     """
-    BATCH_SIZE=100
+    BATCH_SIZE=30
     
     STATES=["waiting", "complete", "partial"]
   
@@ -91,6 +91,8 @@ class LastfmProxy(AgentThreadedBase):
         self.dbusif=dbusif
         self.detected=False
         self.lastTs=0
+        self.inProgress=False
+        self.currentTs=0
 
     def h_timer_day(self, *_):
         """
@@ -107,6 +109,31 @@ class LastfmProxy(AgentThreadedBase):
         """
         Each hour, perform a partial sync
         """
+        self._doProcess()
+        
+    def h_timer_minute(self, *_):
+        """
+        Each minute, send more records to process
+        """
+        ### see if something changed: if nothing changed,
+        ### then that probably means we have nothing to
+        ### do for the moment
+        if self.currentTs == self.lastTs:
+            return
+
+        self._doProcess()
+        
+    def h_track(self, track, *_):
+        """
+        Extract the 'updated' field from the 'track' message.
+        If it isn't present, then we have nothing to do with
+        the message.  On the contrary, we update the 'last_ts'
+        local tracker.
+        """
+        try:    updated=track["updated"]
+        except: return
+        
+        self.lastTs = updated
         
     def h_lastfm_proxy_detected(self, detected):
         """
@@ -124,7 +151,12 @@ class LastfmProxy(AgentThreadedBase):
         """
         Our trigger to start processing
         """
+        self._doProcess()
         
+    def _doProcess(self):
+        print "asking for records, lastTs(%s)" % self.lastTs
+        self.currentTs=self.lastTs
+        self.dbusif.qRecords(self.lastTs, self.BATCH_SIZE)
         
         
 

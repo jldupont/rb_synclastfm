@@ -2,11 +2,11 @@
     Finds an "entry" in the database
 
     MESSAGES IN:
-    - "meta_track"
-    - "track"
+    - "ptrack"
     
     MESSAGES OUT:
     - "track_entry"
+    - "track_updated"
     
 
     @author: jldupont
@@ -18,8 +18,8 @@ from synclastfm.system.mbus import Bus
 
 
 class TrackEntryWrapper(object):
-    def __init__(self, track_entry, db_entry): 
-        self.track_entry=track_entry
+    def __init__(self, track, db_entry): 
+        self.track=track
         self.db_entry=db_entry
         
 
@@ -28,19 +28,17 @@ class FinderAgent(object):
     def __init__(self): 
         self.db=None
 
-        Bus.subscribe("FinderAgent", "mb_track",     self.h_mb_track)
-        Bus.subscribe("FinderAgent", "rb_shell",     self.on_rb_shell)
+        Bus.subscribe(self.__class__, "ptracak",      self.h_ptrack)
+        Bus.subscribe(self.__class__, "rb_shell",     self.on_rb_shell)
 
-    def on_rb_shell(self, rbobjects):
+    def on_rb_shell(self, _shell, db, _sp):
         """
         Grab RB objects references (shell, db, player)
         """
-        self._robjects=rbobjects
-        self.db=self._robjects.db
-
+        self.db=db
     
 
-    def h_mb_track(self, _source, _ukey, track):
+    def h_ptrack(self, _source, _ukey, track):
         """
         For each 'mb_track' received, try to find a corresponding
         rb db entry and issue a "track_entry" message.
@@ -70,7 +68,7 @@ class FinderAgent(object):
             print "-- NOT FOUND: artist(%s) track(%s)" % (artist_name, track_name)
             
         te=TrackEntryWrapper(track, dbe)
-        Bus.publish("FinderAgent", "track_entry", te)
+        Bus.publish(self.__class__, "track_entry", te, artist_name, track_name)
     
 
 _=FinderAgent()

@@ -60,8 +60,7 @@ import agents.mb
 #import agents.state
 import agents.libwalker
 import agents.lastfm_proxy
-
-#import agents.finder
+import agents.finder
 
 
 PLUGIN_NAME="synclastfm"
