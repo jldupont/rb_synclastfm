@@ -28,11 +28,16 @@
     @author: jldupont
     @date: Jun 4, 2010
 """
+import time
+
 from synclastfm.system.mbus import Bus
 from synclastfm.track import Track
 from synclastfm.helpers import EntryHelper
 
 class LibWalker(object):
+
+    ### libwalk period
+    WALKING_TIMEOUT=24*60*60
 
     ### in seconds
     PERIOD=1
@@ -53,7 +58,7 @@ class LibWalker(object):
     MODE_HIGH = 1
 
     JOBS_PARAMS = { MODE_LOW:  PERIOD*1
-                   ,MODE_HIGH: PERIOD*100 }
+                   ,MODE_HIGH: PERIOD*10 }
 
     def __init__(self):
         self.freq=0
@@ -62,6 +67,9 @@ class LibWalker(object):
         self.last_db_mtime=0
         self.mb_detected=False
         self.song_entries=[]
+        
+        self.last_libwalk=0
+        self.enable=False
         
         ## Integration
         self.icount=0
@@ -74,6 +82,7 @@ class LibWalker(object):
         
         Bus.subscribe(self.__class__, "tick",          self.h_tick)
         Bus.subscribe(self.__class__, "tick_params",   self.h_tick_params)
+        Bus.subscribe(self.__class__, "last_libwalk",  self.h_last_libwalk)
         Bus.subscribe(self.__class__, "rb_shell",      self.h_rb_shell)
         Bus.subscribe(self.__class__, "mb_track",      self.h_mb_track)
         Bus.subscribe(self.__class__, "entry_added",   self.h_entry_added)
@@ -135,11 +144,28 @@ class LibWalker(object):
         """
         self.freq=freq
         self.ticount=freq*self.INTEG_PERIOD
+        self._check()
+
+    def h_timer_hour(self):
+        Bus.publish(self.__class__, "last_libwalk?")
+        self._check()
+        
+    def h_last_libwalk(self, ts):
+        self.last_libwalk=ts
+
+    def _check(self):
+        now=time.time()
+        delta=now-self.last_libwalk
+        if delta>self.WALKING_TIMEOUT:
+            print "* enabling lib-walking"
+            self.enable=True
 
     def h_tick(self, count):
         """
         'tick' timebase handler
         """
+        if not self.enable:
+            return
         
         ## not much we can do with Musicbrainz Proxy
         if not self.mb_detected:
@@ -152,7 +178,9 @@ class LibWalker(object):
         
         ## nothing more todo!
         if l==0:
-            Bus.publish(self.__class__, "libwalker_done")
+            now=time.time()            
+            Bus.publish(self.__class__, "libwalker_done", now)
+            self.enable=False
             return
         
         ## not the time to issue requests

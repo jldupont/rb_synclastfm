@@ -100,6 +100,12 @@ class MBAgent(AgentThreadedBase):
         self.dbusif=DbusInterface(self)
         self.detected=False
         
+    def h_tick_params(self, *_):
+        """
+        Kickstart
+        """
+        self.dbusif.qTrack("rb", "Depeche Mode", "Little 15")
+        
     def hq_musicbrainz_proxy_detected(self):
         self.pub("musicbrainz_proxy_detected", self.detected)
         

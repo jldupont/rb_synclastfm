@@ -29,15 +29,29 @@ class StateAgent(object):  #@UndefinedVariable
     def __init__(self): 
 
         self.last_ts=0
-        Bus.subscribe("StateAgent", "q_last_ts",     self.q_last_ts)
-        Bus.subscribe("StateAgent", "track_updated", self.h_track_updated)
+        #Bus.subscribe(self.__class__, "q_last_ts",     self.q_last_ts)
+        #Bus.subscribe(self.__class__, "track_updated", self.h_track_updated)
+        
+        Bus.subscribe(self.__class__, "last_libwalk?",  self.hq_last_libwalk)
+        Bus.subscribe(self.__class__, "libwalker_done", self.h_libwalker_done)
 
         self.gclient=gconf.client_get_default()
+
+    def hq_last_libwalk(self, *_):
+        try:    value=self.gclient.get_int(self.PATH % "last_libwalk")
+        except: value=0
+        Bus.publish(self.__class__, "last_libwalk", value)
+
+    def h_libwalker_done(self, ts):
+        try:    value=self.gclient.set_int(self.PATH % "last_libwalk", ts)
+        except: 
+            print "Can't update 'last_libwalk' config"
+
 
     def hq_last_db_mtime(self, *_):
         try:    value=self.gclient.get_int(self.PATH % "last_db_mtime")
         except: value=0
-        Bus.publish("StateAgent", "last_db_mtime", value)
+        Bus.publish(self.__class__, "last_db_mtime", value)
 
     def h_last_db_mtime(self, value):
         try:    self.gclient.set_int(self.PATH % "last_db_mtime", value)
@@ -76,7 +90,7 @@ class StateAgent(object):  #@UndefinedVariable
         if self.last_ts is None:
             self.last_ts=0
             
-        Bus.publish("StateAgent", "last_ts", self.last_ts)
+        Bus.publish(self.__class__, "last_ts", self.last_ts)
         return True
         
 

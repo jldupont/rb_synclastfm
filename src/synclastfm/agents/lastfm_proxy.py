@@ -20,7 +20,7 @@ import dbus.service
 
 from synclastfm.system.base import AgentThreadedBase
 from synclastfm.track import Track
-
+from synclastfm.system.mbus import Bus
         
    
 
@@ -32,6 +32,11 @@ class DbusInterface(dbus.service.Object):
     
     def __init__(self):
         dbus.service.Object.__init__(self, dbus.SessionBus(), self.PATH)
+        dbus.Bus().add_signal_receiver(self.sRecords, 
+                               signal_name="Records", 
+                               dbus_interface="com.jldupont.lastfm.proxy", 
+                               bus_name=None, 
+                               path="/Records")
 
     @dbus.service.signal(dbus_interface="com.jldupont.lastfm.proxy", signature="vv")
     def qRecords(self, ts, limit):
@@ -63,20 +68,11 @@ class DbusInterface(dbus.service.Object):
                 entry[str(key)]=record[str(key)]
 
             track=Track(entry)
-            Bus.emit("track", track)
+            Bus.publish(self.__class__, "track", track)
 
-        Bus.emit("lastfm_proxy_detected", True)
+        Bus.publish(self.__class__, "lastfm_proxy_detected", True)
         
         
-
-dbusif=DbusInterface()
-dbus.Bus().add_signal_receiver(dbusif.sRecords, 
-                               signal_name="Records", 
-                               dbus_interface="com.jldupont.lastfm.proxy", 
-                               bus_name=None, 
-                               path="/Records")
-    
-
 
 class LastfmProxy(AgentThreadedBase):
     """
@@ -84,11 +80,9 @@ class LastfmProxy(AgentThreadedBase):
     """
     BATCH_SIZE=30
     
-    STATES=["waiting", "complete", "partial"]
-  
-    def __init__(self, dbusif):
+    def __init__(self):
         AgentThreadedBase.__init__(self)
-        self.dbusif=dbusif
+        self.dbusif=DbusInterface()
         self.detected=False
         self.lastTs=0
         self.inProgress=False
@@ -160,5 +154,5 @@ class LastfmProxy(AgentThreadedBase):
         
         
 
-_=LastfmProxy(dbusif)
+_=LastfmProxy()
 _.start()
