@@ -59,7 +59,7 @@ import agents.cache_track
 import agents.mb
 import agents.state
 import agents.libwalker
-#import agents.lastfm_proxy
+import agents.lastfm_proxy
 import agents.finder
 
 

@@ -16,13 +16,14 @@
     - "entry_added"
     - "rb_shell"
     - "tick"
-    - "last_db_mtime"
     - "ptrack"
     - "musicbrainz_proxy_detected"
     
     Messages Out:
     - "ctrack"
-    - "last_db_mtime?"
+    - "last_libwalk?"
+    - "libwalker_start"
+    - "libwalker_done"
     
     
     @author: jldupont
@@ -64,7 +65,6 @@ class LibWalker(object):
         self.freq=0
         self.count=0
         self.db=None
-        self.last_db_mtime=0
         self.mb_detected=False
         self.song_entries=[]
         
@@ -88,8 +88,6 @@ class LibWalker(object):
         Bus.subscribe(self.__class__, "entry_added",   self.h_entry_added)
         Bus.subscribe(self.__class__, "song_entries",  self.h_song_entries)
         Bus.subscribe(self.__class__, "musicbrainz_proxy_detected", self.h_musicbrainz_proxy_detected)
-
-        #Bus.publish(self.__class__, "last_db_mtime?")
 
     ## ========================================================================= handlers
 
@@ -129,9 +127,6 @@ class LibWalker(object):
         if source=="cache":
             self.hits += 1
 
-    #def h_last_db_mtime(self, value):
-    #    self.last_db_mtime=value
-
     def h_rb_shell(self, _shell, db, _sp):
         """
         Grab RB objects references (shell, db, player)
@@ -156,9 +151,12 @@ class LibWalker(object):
     def _check(self):
         now=time.time()
         delta=now-self.last_libwalk
-        if delta>self.WALKING_TIMEOUT:
+        start=delta>self.WALKING_TIMEOUT
+        if start:
             print "* enabling lib-walking"
             self.enable=True
+            
+        Bus.publish(self.__class__, "libwalker_start", start)
 
     def h_tick(self, count):
         """
@@ -200,7 +198,7 @@ class LibWalker(object):
             track=self.getTrackByDbId(id)
             
             key="%s=%s" % (self.CACHE_ID_STRING, id)
-            Bus.publish(self.__class__, "track", track, False, key)
+            Bus.publish(self.__class__, "track", track, False, key, "low")
      
     ## ========================================================================= helpers
      

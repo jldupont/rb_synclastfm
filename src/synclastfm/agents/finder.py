@@ -28,7 +28,7 @@ class FinderAgent(object):
     def __init__(self): 
         self.db=None
 
-        Bus.subscribe(self.__class__, "ptracak",      self.h_ptrack)
+        Bus.subscribe(self.__class__, "ptrack",       self.h_ptrack)
         Bus.subscribe(self.__class__, "rb_shell",     self.on_rb_shell)
 
     def on_rb_shell(self, _shell, db, _sp):

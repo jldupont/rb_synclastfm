@@ -26,7 +26,7 @@ class CacheTrackAgent(AgentThreadedBase):
         AgentThreadedBase.__init__(self)
         self.ss=SimpleStore(size=self.CACHE_ENTRIES, destructive=False)
 
-    def hq_track(self, track, key=None):
+    def hq_track(self, track, key=None, priority="high"):
         """
         Keep the 'track' in cache
         
@@ -34,10 +34,10 @@ class CacheTrackAgent(AgentThreadedBase):
         the said 'track' object contains the original contextual information
         """
         ukey=self.ss.store(track, key)
-        self.pub("ctrack", ukey, track)
+        self.pub("ctrack", ukey, track, priority)
 
         
-    def h_track(self, track, cache=True, key=None):
+    def h_track(self, track, cache=True, key=None, priority="high"):
         """
         Keep the 'track' in cache
         
@@ -46,9 +46,9 @@ class CacheTrackAgent(AgentThreadedBase):
         """
         if cache:
             ukey=self.ss.store(track, key)
-            self.pub("ctrack", ukey, track)
+            self.pub("ctrack", ukey, track, priority)
         else:
-            self.pub("ctrack", key, track)
+            self.pub("ctrack", key, track, priority)
         
         
     def h_mb_track(self, source, ukey, mb_track):
@@ -74,7 +74,9 @@ class CacheTrackAgent(AgentThreadedBase):
             return
     
         ptrack=copy.deepcopy(mb_track)
-        ptrack.merge(otrack)
+        
+        ## need to keep the variants of [artist;track] coming from MB proxy!
+        ptrack.mergeSpecial(otrack)
         
         self.pub("ptrack", source, ukey, ptrack)
 

@@ -15,8 +15,8 @@
     @author: jldupont
     @date: May 27, 2010
 """
+import time
 import dbus.service
-#import rhythmdb  #@UnresolvedImport
 
 from synclastfm.system.base import AgentThreadedBase
 from synclastfm.track import Track
@@ -32,19 +32,19 @@ class DbusInterface(dbus.service.Object):
     
     def __init__(self):
         dbus.service.Object.__init__(self, dbus.SessionBus(), self.PATH)
-        dbus.Bus().add_signal_receiver(self.sRecords, 
-                               signal_name="Records", 
+        dbus.Bus().add_signal_receiver(self.sRecordsLatest, 
+                               signal_name="RecordsLatest", 
                                dbus_interface="com.jldupont.lastfm.proxy", 
                                bus_name=None, 
                                path="/Records")
 
     @dbus.service.signal(dbus_interface="com.jldupont.lastfm.proxy", signature="vv")
-    def qRecords(self, ts, limit):
+    def qRecordsLatest(self, ts, limit):
         """
         Signal Emitter - qRecords
         """
 
-    def sRecords(self, records):
+    def sRecordsLatest(self, records):
         """
         Signal Receptor - Records
         
@@ -60,6 +60,7 @@ class DbusInterface(dbus.service.Object):
          - "album_name"
          - "album_mbid"      
         """
+      
         for record in records:
             entry={}
 
@@ -67,6 +68,7 @@ class DbusInterface(dbus.service.Object):
             for key in keys:
                 entry[str(key)]=record[str(key)]
 
+            #print "entry: %s" % entry
             track=Track(entry)
             Bus.publish(self.__class__, "track", track)
 
@@ -78,15 +80,22 @@ class LastfmProxy(AgentThreadedBase):
     """
     Updates various properties
     """
-    BATCH_SIZE=30
+    BATCH_SIZE=60
     
     def __init__(self):
         AgentThreadedBase.__init__(self)
         self.dbusif=DbusInterface()
         self.detected=False
-        self.lastTs=0
-        self.inProgress=False
-        self.currentTs=0
+        
+        self.canStart=False
+
+        self.state=0
+        
+        self.ptrTs=time.time()
+        self.lowestTs=None
+        
+        self.lday=None
+        self.cday=0
 
     def h_timer_day(self, *_):
         """
@@ -97,38 +106,65 @@ class LastfmProxy(AgentThreadedBase):
         it may take several iterations through Musicbrainz / RB
         to increase resolution accuracy to a workable level.
         """
-        self.lastTs=0
-        
-    def h_timer_hour(self, *_):
-        """
-        Each hour, perform a partial sync
-        """
-        self._doProcess()
+        self.cday += 1
         
     def h_timer_minute(self, *_):
         """
         Each minute, send more records to process
         """
-        ### see if something changed: if nothing changed,
-        ### then that probably means we have nothing to
-        ### do for the moment
-        if self.currentTs == self.lastTs:
+        #if not self.canStart:
+        #    return
+        
+        print "==> state: %s, ptrTs: %s lowestTs: %s" % (self.state, self.ptrTs, self.lowestTs)
+        
+        ## state 0: check if we can start a cycle
+        if self.state==0:
+            if self.lday is None:
+                self.state=1
+            if self.lday != self.cday:
+                self.state=1
+                self.lday=self.cday
+
+        if self.state==1:
+            self.ptrTs=time.time()
+            self.lowestTs=None
+            self._doProcess()
+            self.state=2
             return
 
-        self._doProcess()
-        
+        if self.state==2:
+            ## 1) we got nothing... maybe Lastfm-proxy-dbus
+            ## isn't available... retry later
+            ## 2) Or we have finished a cycle
+            if self.lowestTs is None:
+                self.state=0
+            
+            if self.lowestTs is not None:
+                self.ptrTs=self.lowestTs
+                self.lowestTs=None
+                self._doProcess()
+                
+    
     def h_track(self, track, *_):
         """
-        Extract the 'updated' field from the 'track' message.
-        If it isn't present, then we have nothing to do with
-        the message.  On the contrary, we update the 'last_ts'
-        local tracker.
+        Intercept the 'track' message in order to grab the
+        'updated' field
         """
-        try:    updated=track["updated"]
-        except: return
+        try: updated=track.details["updated"]
+        except: updated=None
+        if updated is None:
+            return
         
-        self.lastTs = updated
+        #print "(updated(%s))" % updated
         
+        if self.lowestTs is None:
+            self.lowestTs = updated
+        if updated < self.lowestTs:
+            self.lowestTs=updated
+    
+    
+    ## ================================================================ TRIGGERS
+    
     def h_lastfm_proxy_detected(self, detected):
         """
         Grab this status from the Dbus agent
@@ -140,17 +176,28 @@ class LastfmProxy(AgentThreadedBase):
         Respond to other agents e.g. Config 
         """
         self.pub("lastfm_proxy_detected", self.detected)
+
+
+            
+    def h_libwalker_start(self, start):
+        """
+        If 'libwalking' isn't performed, then we can proceed
+        """
+        if start:
+            self.canStart=True
         
     def h_libwalker_done(self, *_):
         """
-        Our trigger to start processing
+        Our other trigger to start processing
         """
-        self._doProcess()
+        self.canStart=True
+        
+        
+    ## ================================================================ HELPERS
         
     def _doProcess(self):
-        print "asking for records, lastTs(%s)" % self.lastTs
-        self.currentTs=self.lastTs
-        self.dbusif.qRecords(self.lastTs, self.BATCH_SIZE)
+        print "asking for records, ptrTs(%s)" % self.ptrTs
+        self.dbusif.qRecordsLatest(self.ptrTs, self.BATCH_SIZE)
         
         
 

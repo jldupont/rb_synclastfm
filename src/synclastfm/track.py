@@ -35,3 +35,12 @@ class Track(object):
         """
         self.details.update(track.details)
         self.lastfm_info.update(track.lastfm_info)
+
+    def mergeSpecial(self, track):
+        artist_name=self.details["artist_name"]
+        track_name=self.details["track_name"]
+        self.details.update(track.details)
+        self.lastfm_info.update(track.lastfm_info)
+        self.details["artist_name"]=artist_name
+        self.details["track_name"]=track_name
+        

@@ -50,12 +50,11 @@ class DbusInterface(dbus.service.Object):
                                path="/Tracks")
 
 
-    @dbus.service.signal(dbus_interface="com.jldupont.musicbrainz.proxy", signature="vvv")
-    def qTrack(self, _ref, _artist_name, _track_name):
+    @dbus.service.signal(dbus_interface="com.jldupont.musicbrainz.proxy", signature="vvvv")
+    def qTrack(self, _ref, _artist_name, _track_name, _priority):
         """
         Signal Emitter - qTrack
         """
-        
 
     def sTracks(self, source, ref, tracks):
         """
@@ -64,7 +63,8 @@ class DbusInterface(dbus.service.Object):
         Verify the "ref" parameter to make sure it is
         in reponse to a 'question' we asked
         """
-        
+        rb=False
+
         try:    
             rbstr, ukey=ref.split(":")
             rb=(rbstr=="rb")
@@ -104,7 +104,7 @@ class MBAgent(AgentThreadedBase):
         """
         Kickstart
         """
-        self.dbusif.qTrack("rb", "Depeche Mode", "Little 15")
+        self.dbusif.qTrack("rb", "Depeche Mode", "Little 15", "low")
         
     def hq_musicbrainz_proxy_detected(self):
         self.pub("musicbrainz_proxy_detected", self.detected)
@@ -113,9 +113,9 @@ class MBAgent(AgentThreadedBase):
         """
         Helps the track resolving functionality
         """
-        self.h_ctrack(None, track)
+        self.h_ctrack(None, track, "high")
         
-    def h_ctrack(self, ukey, track):
+    def h_ctrack(self, ukey, track, priority):
         """
         'ctrack' message handler - from CacheTrack Agent
         
@@ -134,10 +134,10 @@ class MBAgent(AgentThreadedBase):
         except: track_mbid= ""
             
         if len(track_mbid) < 36:
-            self._loopkup(ukey, track)
+            self._loopkup(ukey, track, priority)
         
               
-    def _loopkup(self, ukey, track):
+    def _loopkup(self, ukey, track, priority):
         """
         Sends the signal 'qTrack' over DBus to Musicbrainz-Proxy
         """
@@ -166,7 +166,7 @@ class MBAgent(AgentThreadedBase):
             ref="rb"
         
         ### Ask Musicbrainz Proxy for some more info
-        self.dbusif.qTrack(ref, artist_name, track_name)
+        self.dbusif.qTrack(ref, artist_name, track_name, priority)
 
 
 ## Kick start the agent        
