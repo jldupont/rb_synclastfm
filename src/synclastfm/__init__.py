@@ -32,6 +32,12 @@
 
     
 """
+import os
+import sys
+
+curdir=os.path.dirname(__file__)
+sys.path.insert(0, curdir)
+
 import gobject
 import dbus.glib
 from dbus.mainloop.glib import DBusGMainLoop

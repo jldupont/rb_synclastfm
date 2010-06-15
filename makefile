@@ -6,6 +6,7 @@ PRJ=rb_synclastfm
 VERSION:=`cat VERSION`
 
 DEFAULT_DISTRO=karmic
+DATE=`date +'%a, %d %B %Y %T %z'`
 
 ifeq ($(DIST),)
 	DIST=${DEFAULT_DISTRO}
@@ -39,7 +40,7 @@ orig:
 	@cp VERSION "/tmp/$(PRJ)/VERSION"
 		
 	@echo "Adjusting debian/changelog to DIST & VERSION"
-	@cat packages/debian/changelog | sed "s/_DIST_/${DIST}/g" | sed "s/_VERSION_/${VERSION}/g" > "/tmp/${PRJ}/${PRJ}-${VERSION}/debian/changelog"
+	@cat packages/debian/changelog | sed "s/_DIST_/${DIST}/g" | sed "s/_VERSION_/${VERSION}/g" | sed "s/_DATE_/${DATE}/g" > "/tmp/${PRJ}/${PRJ}-${VERSION}/debian/changelog"
 	
 	@echo "** SUCCESS: folder ready: /tmp/$(PRJ)"
 	@echo "*** DON'T FORGET TO UPDATE debian/changelog ***"
