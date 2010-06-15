@@ -37,6 +37,7 @@ import sys
 
 curdir=os.path.dirname(__file__)
 sys.path.insert(0, curdir)
+print curdir
 
 import gobject
 import dbus.glib

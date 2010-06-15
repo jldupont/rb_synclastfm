@@ -43,7 +43,7 @@ History
 Starting with v2.0, the plugin should be used with the listed dependencies (i.e. Musicbrainz-proxy-dbus, Lastfm-proxy-dbus)
 in order to fully leverage its capabilities.
 
- - v2.01: added explicit local path to sys.path
+ - v2.02: corrected debian package to include all files
 
 Dependencies
 ============
