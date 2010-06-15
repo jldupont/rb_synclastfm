@@ -68,7 +68,7 @@ class DbusInterface(dbus.service.Object):
             for key in keys:
                 entry[str(key)]=record[str(key)]
 
-            #print "entry: %s" % entry
+            #print "entry: artist(%s) track(%s) playcount(%s)" % (entry["artist_name"], entry["track_name"], entry["playcount"])
             track=Track(entry)
             Bus.publish(self.__class__, "track", track)
 
@@ -115,7 +115,7 @@ class LastfmProxy(AgentThreadedBase):
         #if not self.canStart:
         #    return
         
-        print "==> state: %s, ptrTs: %s lowestTs: %s" % (self.state, self.ptrTs, self.lowestTs)
+        #print "==> state: %s, ptrTs: %s lowestTs: %s" % (self.state, self.ptrTs, self.lowestTs)
         
         ## state 0: check if we can start a cycle
         if self.state==0:
@@ -126,6 +126,7 @@ class LastfmProxy(AgentThreadedBase):
                 self.lday=self.cday
 
         if self.state==1:
+            print "starting!"
             self.ptrTs=time.time()
             self.lowestTs=None
             self._doProcess()
@@ -137,6 +138,7 @@ class LastfmProxy(AgentThreadedBase):
             ## isn't available... retry later
             ## 2) Or we have finished a cycle
             if self.lowestTs is None:
+                print "finished!"
                 self.state=0
             
             if self.lowestTs is not None:

@@ -45,13 +45,13 @@ class FinderAgent(object):
         
         This should help 'Updater' to do its job.
         """
-        artist_name= str(track.details["artist_name"])
-        track_name = str(track.details["track_name"])
+        artist_name=track.details["artist_name"]
+        track_name=track.details["track_name"]
         
         #print "meta_track: %s" % track
         
-        s1=(rhythmdb.QUERY_PROP_LIKE, rhythmdb.PROP_ARTIST, artist_name)
-        s2=(rhythmdb.QUERY_PROP_LIKE, rhythmdb.PROP_TITLE, track_name)
+        s1=(rhythmdb.QUERY_PROP_LIKE, rhythmdb.PROP_ARTIST, str(artist_name))
+        s2=(rhythmdb.QUERY_PROP_LIKE, rhythmdb.PROP_TITLE,  str(track_name))
         query = self.db.query_new()
         self.db.query_append(query, s1)
         self.db.query_append(query, s2)
@@ -59,16 +59,18 @@ class FinderAgent(object):
         self.db.do_full_query_parsed(query_model, query)
         
         dbe=None
+        id=None
         for e in query_model:
             dbe=e[0]
-            print "++ FOUND: artist(%s) track(%s)" % (artist_name, track_name)            
+            id=self.db.entry_get(dbe, rhythmdb.PROP_ENTRY_ID)
+            #print "++ FOUND: artist(%s) track(%s)" % (artist_name, track_name)            
             break  ## not elegant but it works
             
-        if dbe is None:
-            print "-- NOT FOUND: artist(%s) track(%s)" % (artist_name, track_name)
+        #if dbe is None:
+        #    print "-- NOT FOUND: artist(%s) track(%s)" % (artist_name, track_name)
             
         te=TrackEntryWrapper(track, dbe)
-        Bus.publish(self.__class__, "track_entry", te, artist_name, track_name)
+        Bus.publish(self.__class__, "track_entry", te, artist_name, track_name, id)
     
 
 _=FinderAgent()

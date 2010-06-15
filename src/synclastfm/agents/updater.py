@@ -23,7 +23,7 @@
 import rhythmdb #@UnresolvedImport
 
 from synclastfm.system.mbus import Bus
-
+from synclastfm.system.dtype import BoundedList
 
 class Updater(object): #@UndefinedVariable
     """
@@ -32,8 +32,9 @@ class Updater(object): #@UndefinedVariable
     def __init__(self):
         self._shell=None
         self._db=None
+        self.recentlyUpdated=BoundedList(16)
         
-        #Bus.subscribe(self.__class__, "track_entry",     self.on_track_entry)
+        Bus.subscribe(self.__class__, "track_entry",     self.on_track_entry)
         Bus.subscribe(self.__class__, "user_track_info", self.on_user_track_info)
         Bus.subscribe(self.__class__, "rb_shell",        self.on_rb_shell)
         
@@ -44,11 +45,15 @@ class Updater(object): #@UndefinedVariable
         self._shell=shell
         self._db=db
         
-    def _on_track_entry(self, trackWrapper, artist_name, track_name):
+    def on_track_entry(self, trackWrapper, artist_name, track_name, dbid):
         """
         Note: track_entry is defined in "Finder"
         """
-        te=trackWrapper.track
+        if dbid in self.recentlyUpdated:
+            print ">>> recently updated: a(%s) t(%s)" % (artist_name, track_name)
+            return
+        
+        track=trackWrapper.track
         dbe=trackWrapper.db_entry
         
         #print "te.details: %s" % te.details
@@ -58,20 +63,21 @@ class Updater(object): #@UndefinedVariable
         if dbe is None:
             return
                
-        try: playcount=track["playcount"]
+        try: playcount=track.details["playcount"]
         except:
-            print "** Playcount not found"
+            #print "** Playcount not found"
             return
         
-        print "updating: artist(%s) track(%s) playcount(%s)" % (artist_name, track_name, playcount)
+        #print "updating: artist(%s) track(%s) playcount(%s)" % (artist_name, track_name, playcount)
         
         try:
             self._db.set(dbe, rhythmdb.PROP_PLAY_COUNT, playcount)
             self._db.commit()
+            self.recentlyUpdated.push(dbid)
         except Exception,e:
             print "ERROR: updating 'playcount' for track: %s" % e
         
-        Bus.publish(self.__class__, "track_updated", te, artist_name, track_name)
+        Bus.publish(self.__class__, "track_updated", track, artist_name, track_name)
         
         
         

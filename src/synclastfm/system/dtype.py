@@ -6,7 +6,44 @@
 """
 import uuid
 
-__all__=["BoundedDict", "SimpleStore"]
+__all__=["BoundedDict", "BoundedList", "SimpleStore"]
+
+class BoundedList(list):
+    """
+    >>> bl=BoundedList(2)
+    >>> bl.push("e1")
+    >>> bl.push("e2")
+    >>> print bl.pop(0)
+    e1
+    >>> print bl.pop(0)
+    e2
+    >>> print bl.pop(0)
+    Traceback (most recent call last):
+        ...
+    IndexError: pop from empty list
+    >>> bl.push("e4")
+    >>> bl.push("e5")
+    >>> bl.push("e6")  ### first element will be pushed out
+    >>> print bl
+    ['e5', 'e6']
+    >>> bl.push("e7")
+    >>> print bl
+    ['e6', 'e7']
+    >>> print 'e6' in bl
+    True
+    >>> print 'e1' in bl
+    False
+    """
+    def __init__(self, size):
+        list.__init__(self)
+        self.size=size
+        
+    def push(self, el):
+        if len(self) >= self.size:
+            self.pop(0)
+        self.append(el)
+
+
 
 class BoundedDict(object):
     """

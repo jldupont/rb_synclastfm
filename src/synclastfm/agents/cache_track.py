@@ -78,6 +78,7 @@ class CacheTrackAgent(AgentThreadedBase):
         ## need to keep the variants of [artist;track] coming from MB proxy!
         ptrack.mergeSpecial(otrack)
         
+        #print ptrack.details
         self.pub("ptrack", source, ukey, ptrack)
 
         
