@@ -112,8 +112,8 @@ class LastfmProxy(AgentThreadedBase):
         """
         Each minute, send more records to process
         """
-        #if not self.canStart:
-        #    return
+        if not self.canStart:
+            return
         
         #print "==> state: %s, ptrTs: %s lowestTs: %s" % (self.state, self.ptrTs, self.lowestTs)
         

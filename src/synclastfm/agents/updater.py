@@ -32,7 +32,7 @@ class Updater(object): #@UndefinedVariable
     def __init__(self):
         self._shell=None
         self._db=None
-        self.recentlyUpdated=BoundedList(16)
+        self.recentlyUpdated=BoundedList(64)
         
         Bus.subscribe(self.__class__, "track_entry",     self.on_track_entry)
         Bus.subscribe(self.__class__, "user_track_info", self.on_user_track_info)
