@@ -13,7 +13,7 @@ is checked from the user's profile on Last.fm; if the track is "loved" then the 
 
 3. Interface to "lastfm-proxy-dbus" through DBus: provides "syncing" of 'playcount' of the user's tracks from the "Recent Tracks" journal on Last.fm.
 
-4. Interface to "musicbrainz-proxy-dbus": provides resolving [artist;track] with Musicbrainz.
+4. Interface to "musicbrainz-proxy-dbus": provides resolving [artist;track] with Musicbrainz for increased success rate in finding matching track in Rhythmbox.
 
 Musicbrainz
 ===========
@@ -31,6 +31,18 @@ There are 2 methods:
 2. Use the "Download Source" function of this git repo and place the "rbsynclastfm" folder in ".gnome/rhythmbox/plugins
 
 Note that option #2 isn't preferred as one might get an "unstable" snapshot. 
+
+Usage
+=====
+
+Launch 'musicbrainz-proxy-dbus' and 'lastfm-proxy-dbus' applications before starting Rhythmbox.
+
+History
+=======
+
+Starting with v2.0, the plugin should be used with the listed dependencies (i.e. Musicbrainz-proxy-dbus, Lastfm-proxy-dbus)
+in order to fully leverage its capabilities.
+ 
 
 Dependencies
 ============
