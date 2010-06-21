@@ -44,6 +44,7 @@ Starting with v2.0, the plugin should be used with the listed dependencies (i.e.
 in order to fully leverage its capabilities.
 
  - v2.02: corrected debian package to include all files
+ - v2.03: fixed corner case in CacheTrackAgent
 
 Dependencies
 ============

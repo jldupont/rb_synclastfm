@@ -44,6 +44,10 @@ class CacheTrackAgent(AgentThreadedBase):
         When an "mb_track" comes back in, pull the original 'track':
         the said 'track' object contains the original contextual information
         """
+        if track is None:
+            print "track is None"
+            return
+            
         if cache:
             ukey=self.ss.store(track, key)
             self.pub("ctrack", ukey, track, priority)
@@ -71,6 +75,10 @@ class CacheTrackAgent(AgentThreadedBase):
         try:    otrack=self.ss.retrieve(ukey)
         except: 
             #print "!! Unable to retrieve from cache: key(%s)" % ukey
+            return
+    
+        if otrack is None:
+            print "otrack is None"
             return
     
         ptrack=copy.deepcopy(mb_track)
