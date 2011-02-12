@@ -23,6 +23,9 @@ clean:
 	@rm -r -f /tmp/$(PRJ)
 	
 orig:
+	@echo "Cleaning - Version: ${VERSION}"
+	@rm -r -f /tmp/$(PRJ)
+
 	@echo "* Preparing for packaging -- Version: ${VERSION}, Distribution: ${DIST}"
 	@echo "-------------------------"
 	@echo ""
